@@ -1,0 +1,15 @@
+{
+  "name": "NodePress",
+  "version": "1.0.0",
+  "description": "simple content management system based on expressjs, mongodb and reactjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "CMS",
+    "NodePress"
+  ],
+  "author": "Mohsen Dorparasti",
+  "license": "ISC"
+}
