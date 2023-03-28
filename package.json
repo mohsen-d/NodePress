@@ -4,7 +4,7 @@
   "description": "simple content management system based on expressjs, mongodb and reactjs",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --detectOpenHandles"
   },
   "keywords": [
     "CMS",

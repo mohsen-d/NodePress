@@ -1,11 +1,13 @@
 const request = require("supertest");
+const mongoose = require("mongoose");
 
 let server;
 beforeEach(() => {
-  server = require("../index");
+  server = require("../../index");
 });
 afterEach(() => {
   server.close();
+  mongoose.disconnect();
 });
 
 it("should redirect to setup route if website is not configured yet", async () => {
