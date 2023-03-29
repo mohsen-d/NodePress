@@ -1,15 +1,15 @@
 const posts = require("../../../controllers/posts.controller");
 const postsDb = require("../../../database/posts.db");
 
-describe("newPost", () => {
+describe("addPost", () => {
   const newPost = {
     title: "title",
     content: "content",
   };
 
-  mockInsert = jest.fn();
-  mockInsert.mockReturnValue(newPost);
-  postsDb.insert = mockInsert;
+  mockAddPost = jest.fn();
+  mockAddPost.mockReturnValue(newPost);
+  postsDb.addPost = mockAddPost;
 
   let req = {};
 
@@ -38,18 +38,18 @@ describe("newPost", () => {
 
   it("should return with error code 400 if new post is invalid", () => {
     req.body.title = undefined;
-    const result = posts.newPost(req, res);
+    const result = posts.addPost(req, res);
     expect(result.status).toBe(400);
     expect(result.body["title"]).not.toBeUndefined;
   });
 
   it("should pass valid new post to database layer", () => {
-    const result = posts.newPost(req, res);
-    expect(postsDb.insert).toHaveBeenCalled();
+    const result = posts.addPost(req, res);
+    expect(postsDb.addPost).toHaveBeenCalled();
   });
 
   it("should return the inserted post", () => {
-    const result = posts.newPost(req, res);
+    const result = posts.addPost(req, res);
     expect(result.body).toEqual(newPost);
   });
 });
@@ -60,9 +60,9 @@ describe("getPosts", () => {
     content: "content",
   };
 
-  mockFind = jest.fn();
-  mockFind.mockReturnValue([post]);
-  postsDb.find = mockFind;
+  mockGetPosts = jest.fn();
+  mockGetPosts.mockReturnValue([post]);
+  postsDb.getPosts = mockGetPosts;
 
   const req = { body: {} };
 
@@ -76,7 +76,7 @@ describe("getPosts", () => {
 
   it("should get posts from database layer", () => {
     posts.getPosts(req, res);
-    expect(postsDb.find).toHaveBeenCalled();
+    expect(postsDb.getPosts).toHaveBeenCalled();
   });
 
   it("should return found posts to client", () => {
@@ -91,8 +91,8 @@ describe("getPost", () => {
     content: "content",
   };
 
-  mockFindOne = jest.fn();
-  postsDb.findOne = mockFindOne;
+  mockGetPost = jest.fn();
+  postsDb.getPost = mockGetPost;
 
   let req = { params: { id: 1 } };
 
@@ -117,7 +117,7 @@ describe("getPost", () => {
 
   it("should pass id to database layer", () => {
     posts.getPost(req, res);
-    expect(postsDb.findOne).toHaveBeenCalledWith(req.params.id);
+    expect(postsDb.getPost).toHaveBeenCalledWith(req.params.id);
   });
 
   it("should return 404 error if id matches no post", () => {
@@ -126,7 +126,7 @@ describe("getPost", () => {
   });
 
   it("should return the post if found", () => {
-    mockFindOne.mockReturnValue(post);
+    mockGetPost.mockReturnValue(post);
 
     const result = posts.getPost(req, res);
 
@@ -186,9 +186,9 @@ describe("deletePost", () => {
 });
 
 describe("deletePosts", () => {
-  mockDelete = jest.fn();
-  postsDb.delete = mockDelete;
-  mockDelete.mockReturnValue(3);
+  mockDeletePosts = jest.fn();
+  postsDb.deletePosts = mockDeletePosts;
+  mockDeletePosts.mockReturnValue(3);
 
   let req = { body: { ids: [1, 2, 3] } };
 
@@ -212,12 +212,12 @@ describe("deletePosts", () => {
   };
 
   it("should pass ids to database layer", () => {
-    posts.delete(req, res);
-    expect(postsDb.delete).toHaveBeenCalledWith(req.body.ids);
+    posts.deletePosts(req, res);
+    expect(postsDb.deletePosts).toHaveBeenCalledWith(req.body.ids);
   });
 
   it("should return the number of deleted documents", () => {
-    const result = posts.delete(req, res);
+    const result = posts.deletePosts(req, res);
     expect(result.body).toBe(3);
   });
 });
@@ -228,8 +228,8 @@ describe("updatePost", () => {
     content: "content",
   };
 
-  mockUpdateById = jest.fn();
-  postsDb.updateById = mockUpdateById;
+  mockUpdatePost = jest.fn();
+  postsDb.updatePost = mockUpdatePost;
 
   let req = {};
 
@@ -264,27 +264,26 @@ describe("updatePost", () => {
 
   it("should pass valid post to database layer to be updated", () => {
     const result = posts.updatePost(req, res);
-    console.log(result);
-    expect(postsDb.updateById).toHaveBeenCalled();
+    expect(postsDb.updatePost).toHaveBeenCalled();
   });
 
   it("should return 404 error if post not found", () => {
-    mockUpdateById.mockReturnValue(undefined);
+    mockUpdatePost.mockReturnValue(undefined);
     const result = posts.updatePost(req, res);
     expect(result.status).toBe(404);
   });
 
   it("should return the updated post", () => {
-    mockUpdateById.mockReturnValue(post);
+    mockUpdatePost.mockReturnValue(post);
     const result = posts.updatePost(req, res);
     expect(result.body).toEqual(post);
   });
 });
 
 describe("updatePostsDisplay", () => {
-  mockUpdate = jest.fn();
-  postsDb.updateDisplay = mockUpdate;
-  mockUpdate.mockReturnValue(3);
+  mockUpdateDisplay = jest.fn();
+  postsDb.updatePostsDisplay = mockUpdateDisplay;
+  mockUpdateDisplay.mockReturnValue(3);
 
   let req;
 
@@ -319,7 +318,7 @@ describe("updatePostsDisplay", () => {
 
   it("should pass ids to database layer", () => {
     posts.updatePostsDisplay(req, res);
-    expect(postsDb.updateDisplay).toHaveBeenCalledWith(
+    expect(postsDb.updatePostsDisplay).toHaveBeenCalledWith(
       req.body.ids,
       req.body.display
     );

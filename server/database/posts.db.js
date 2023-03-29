@@ -1,15 +1,15 @@
 const Post = require("../models/post.model");
 
-module.exports.insert = function (newPost) {};
+module.exports.addPost = function (newPost) {};
 
-module.exports.find = function (parameters) {};
+module.exports.getPosts = function (parameters) {};
 
-module.exports.findOne = function (id) {};
+module.exports.getPost = function (id) {};
 
-module.exports.delete = function (ids) {};
+module.exports.deletePosts = function (ids) {};
 
 module.exports.deletePost = function (id) {};
 
-module.exports.updateById = function (id, post) {};
+module.exports.updatePost = function (id, post) {};
 
-module.exports.updateDisplay = function (ids, display) {};
+module.exports.updatePostsDisplay = function (ids, display) {};
