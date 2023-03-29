@@ -171,3 +171,62 @@ describe("deletePosts", () => {
     expect(result.body).toBe(3);
   });
 });
+
+describe("updatePost", () => {
+  const post = {
+    title: "title",
+    content: "content",
+  };
+
+  mockUpdateById = jest.fn();
+  postsDb.updateById = mockUpdateById;
+
+  let req = {};
+
+  let res = {
+    send(response) {
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+    status(code) {
+      return {
+        send(response) {
+          return {
+            status: code,
+            body: response,
+          };
+        },
+      };
+    },
+  };
+
+  beforeEach(() => {
+    req = { params: { id: 1 }, body: { ...post } };
+  });
+
+  it("should return 400 error if data is invalid", () => {
+    req.body.title = undefined;
+    const result = posts.updatePost(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should pass valid post to database layer to be updated", () => {
+    const result = posts.updatePost(req, res);
+    console.log(result);
+    expect(postsDb.updateById).toHaveBeenCalled();
+  });
+
+  it("should return 404 error if post not found", () => {
+    mockUpdateById.mockReturnValue(undefined);
+    const result = posts.updatePost(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the updated post", () => {
+    mockUpdateById.mockReturnValue(post);
+    const result = posts.updatePost(req, res);
+    expect(result.body).toEqual(post);
+  });
+});

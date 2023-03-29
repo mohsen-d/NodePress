@@ -7,3 +7,5 @@ module.exports.find = function (parameters) {};
 module.exports.findOne = function (id) {};
 
 module.exports.delete = function (ids) {};
+
+module.exports.updateById = function (id, post) {};

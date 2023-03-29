@@ -28,3 +28,17 @@ module.exports.delete = function (req, res) {
   const result = postsDb.delete(req.body.ids);
   return res.send(result);
 };
+
+module.exports.updatePost = function (req, res) {
+  let post = new Post(req.body);
+
+  const { errors, isValid } = Post.validate(post);
+
+  if (!isValid) return res.status(400).send(errors);
+
+  post = postsDb.updateById(req.params.id, post);
+
+  if (!post) return res.status(404).send("post not found");
+
+  return res.send(post);
+};
