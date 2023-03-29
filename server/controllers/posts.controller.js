@@ -17,3 +17,9 @@ module.exports.getPosts = function (req, res) {
   const list = postsDb.find(req.body);
   return res.send(list);
 };
+
+module.exports.getPost = function (req, res) {
+  const post = postsDb.findOne(req.params.id);
+  if (!post) return res.status(404).send("can't find the post");
+  return res.send(post);
+};

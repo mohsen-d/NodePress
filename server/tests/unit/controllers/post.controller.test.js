@@ -84,3 +84,53 @@ describe("getPosts", () => {
     expect(result.body).toEqual(expect.arrayContaining([post]));
   });
 });
+
+describe("getPost", () => {
+  const post = {
+    title: "title",
+    content: "content",
+  };
+
+  mockFindOne = jest.fn();
+  postsDb.findOne = mockFindOne;
+
+  let req = { params: { id: 1 } };
+
+  let res = {
+    send(response) {
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+    status(code) {
+      return {
+        send(response) {
+          return {
+            status: code,
+            body: response,
+          };
+        },
+      };
+    },
+  };
+
+  it("should pass id to database layer", () => {
+    posts.getPost(req, res);
+    expect(postsDb.findOne).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no post", () => {
+    const result = posts.getPost(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the post if found", () => {
+    mockFindOne.mockReturnValue(post);
+
+    const result = posts.getPost(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(post);
+  });
+});
