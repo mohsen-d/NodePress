@@ -1,39 +1,41 @@
 const posts = require("../../../controllers/posts.controller");
 const postsDb = require("../../../database/posts.db");
 
+const req = {};
+
+const res = {
+  send(response) {
+    return {
+      status: 200,
+      body: response,
+    };
+  },
+  status(code) {
+    return {
+      send(response) {
+        return {
+          status: code,
+          body: response,
+        };
+      },
+    };
+  },
+};
+
+const post = {
+  title: "title",
+  content: "content",
+};
+
+function mockDbMethod(method) {
+  postsDb[method] = jest.fn();
+}
+
 describe("addPost", () => {
-  const newPost = {
-    title: "title",
-    content: "content",
-  };
-
-  mockAddPost = jest.fn();
-  mockAddPost.mockReturnValue(newPost);
-  postsDb.addPost = mockAddPost;
-
-  let req = {};
-
-  let res = {
-    send(response) {
-      return {
-        status: 200,
-        body: response,
-      };
-    },
-    status(code) {
-      return {
-        send(response) {
-          return {
-            status: code,
-            body: response,
-          };
-        },
-      };
-    },
-  };
+  mockDbMethod("addPost");
 
   beforeEach(() => {
-    req.body = { ...newPost };
+    req.body = { ...post };
   });
 
   it("should return with error code 400 if new post is invalid", () => {
@@ -49,30 +51,14 @@ describe("addPost", () => {
   });
 
   it("should return the inserted post", () => {
+    postsDb.addPost.mockReturnValue(post);
     const result = posts.addPost(req, res);
-    expect(result.body).toEqual(newPost);
+    expect(result.body).toEqual(post);
   });
 });
 
 describe("getPosts", () => {
-  const post = {
-    title: "title",
-    content: "content",
-  };
-
-  mockGetPosts = jest.fn();
-  mockGetPosts.mockReturnValue([post]);
-  postsDb.getPosts = mockGetPosts;
-
-  const req = { body: {} };
-
-  const res = {
-    send(response) {
-      return {
-        body: response,
-      };
-    },
-  };
+  mockDbMethod("getPosts");
 
   it("should get posts from database layer", () => {
     posts.getPosts(req, res);
@@ -80,40 +66,16 @@ describe("getPosts", () => {
   });
 
   it("should return found posts to client", () => {
+    postsDb.getPosts.mockReturnValue([post]);
     const result = posts.getPosts(req, res);
     expect(result.body).toEqual(expect.arrayContaining([post]));
   });
 });
 
 describe("getPost", () => {
-  const post = {
-    title: "title",
-    content: "content",
-  };
+  mockDbMethod("getPost");
 
-  mockGetPost = jest.fn();
-  postsDb.getPost = mockGetPost;
-
-  let req = { params: { id: 1 } };
-
-  let res = {
-    send(response) {
-      return {
-        status: 200,
-        body: response,
-      };
-    },
-    status(code) {
-      return {
-        send(response) {
-          return {
-            status: code,
-            body: response,
-          };
-        },
-      };
-    },
-  };
+  req.params = { id: 1 };
 
   it("should pass id to database layer", () => {
     posts.getPost(req, res);
@@ -126,7 +88,7 @@ describe("getPost", () => {
   });
 
   it("should return the post if found", () => {
-    mockGetPost.mockReturnValue(post);
+    postsDb.getPost.mockReturnValue(post);
 
     const result = posts.getPost(req, res);
 
@@ -136,34 +98,9 @@ describe("getPost", () => {
 });
 
 describe("deletePost", () => {
-  const post = {
-    title: "title",
-    content: "content",
-  };
+  mockDbMethod("deletePost");
 
-  mockDeletePost = jest.fn();
-  postsDb.deletePost = mockDeletePost;
-
-  let req = { params: { id: 1 } };
-
-  let res = {
-    send(response) {
-      return {
-        status: 200,
-        body: response,
-      };
-    },
-    status(code) {
-      return {
-        send(response) {
-          return {
-            status: code,
-            body: response,
-          };
-        },
-      };
-    },
-  };
+  req.params = { id: 1 };
 
   it("should pass id to database layer", () => {
     posts.deletePost(req, res);
@@ -176,7 +113,7 @@ describe("deletePost", () => {
   });
 
   it("should return the deleted post", () => {
-    mockDeletePost.mockReturnValue(post);
+    postsDb.deletePost.mockReturnValue(post);
 
     const result = posts.deletePost(req, res);
 
@@ -186,30 +123,9 @@ describe("deletePost", () => {
 });
 
 describe("deletePosts", () => {
-  mockDeletePosts = jest.fn();
-  postsDb.deletePosts = mockDeletePosts;
-  mockDeletePosts.mockReturnValue(3);
+  mockDbMethod("deletePosts");
 
-  let req = { body: { ids: [1, 2, 3] } };
-
-  let res = {
-    send(response) {
-      return {
-        status: 200,
-        body: response,
-      };
-    },
-    status(code) {
-      return {
-        send(response) {
-          return {
-            status: code,
-            body: response,
-          };
-        },
-      };
-    },
-  };
+  req.body = { ids: [1, 2, 3] };
 
   it("should pass ids to database layer", () => {
     posts.deletePosts(req, res);
@@ -217,43 +133,18 @@ describe("deletePosts", () => {
   });
 
   it("should return the number of deleted documents", () => {
+    postsDb.deletePosts.mockReturnValue(3);
     const result = posts.deletePosts(req, res);
     expect(result.body).toBe(3);
   });
 });
 
 describe("updatePost", () => {
-  const post = {
-    title: "title",
-    content: "content",
-  };
-
-  mockUpdatePost = jest.fn();
-  postsDb.updatePost = mockUpdatePost;
-
-  let req = {};
-
-  let res = {
-    send(response) {
-      return {
-        status: 200,
-        body: response,
-      };
-    },
-    status(code) {
-      return {
-        send(response) {
-          return {
-            status: code,
-            body: response,
-          };
-        },
-      };
-    },
-  };
+  mockDbMethod("updatePost");
 
   beforeEach(() => {
-    req = { params: { id: 1 }, body: { ...post } };
+    req.params = { id: 1 };
+    req.body = { ...post };
   });
 
   it("should return 400 error if data is invalid", () => {
@@ -268,46 +159,23 @@ describe("updatePost", () => {
   });
 
   it("should return 404 error if post not found", () => {
-    mockUpdatePost.mockReturnValue(undefined);
+    postsDb.updatePost.mockReturnValue(undefined);
     const result = posts.updatePost(req, res);
     expect(result.status).toBe(404);
   });
 
   it("should return the updated post", () => {
-    mockUpdatePost.mockReturnValue(post);
+    postsDb.updatePost.mockReturnValue(post);
     const result = posts.updatePost(req, res);
     expect(result.body).toEqual(post);
   });
 });
 
 describe("updatePostsDisplay", () => {
-  mockUpdateDisplay = jest.fn();
-  postsDb.updatePostsDisplay = mockUpdateDisplay;
-  mockUpdateDisplay.mockReturnValue(3);
-
-  let req;
-
-  let res = {
-    send(response) {
-      return {
-        status: 200,
-        body: response,
-      };
-    },
-    status(code) {
-      return {
-        send(response) {
-          return {
-            status: code,
-            body: response,
-          };
-        },
-      };
-    },
-  };
+  mockDbMethod("updatePostsDisplay");
 
   beforeEach(() => {
-    req = { body: { ids: [1, 2, 3], display: false } };
+    req.body = { ids: [1, 2, 3], display: false };
   });
 
   it("should return with 400 error is display value is invalid", () => {
@@ -325,6 +193,8 @@ describe("updatePostsDisplay", () => {
   });
 
   it("should return the number of updated documents", () => {
+    postsDb.updatePostsDisplay.mockReturnValue(3);
+
     const result = posts.updatePostsDisplay(req, res);
     expect(result.body).toBe(3);
   });
