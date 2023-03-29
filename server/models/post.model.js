@@ -24,7 +24,12 @@ const schema = new mongoose.Schema({
 });
 
 schema.statics.validate = function (instance) {
-  return instance.validateSync();
+  const result = instance.validateSync();
+  const isValid = result === undefined;
+  return {
+    errors: isValid ? undefined : result.errors,
+    isValid,
+  };
 };
 
 module.exports = mongoose.model("Post", schema);

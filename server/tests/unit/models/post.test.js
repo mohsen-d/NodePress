@@ -14,10 +14,18 @@ describe("validate", () => {
     });
   });
 
+  describe("valid post", () => {
+    it("should pass a valid post", () => {
+      const result = Post.validate(post);
+      expect(result.isValid).toBe(true);
+    });
+  });
+
   describe("subTitle", () => {
     it("should consider a subTitle longer than 50 characters as invalid", () => {
       post.subTitle = new Array(52).join("a");
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["subTitle"]).toBeDefined();
     });
   });
@@ -26,24 +34,28 @@ describe("validate", () => {
     it("should consider a post without title as invalid", () => {
       post.title = undefined;
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["title"]).toBeDefined();
     });
 
     it("should consider a title longer than 250 characters as invalid", () => {
       post.title = new Array(252).join("a");
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["title"]).toBeDefined();
     });
 
     it("should consider an empty title as invalid", () => {
       post.title = "";
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["title"]).toBeDefined();
     });
 
     it("should consider spaces-only title as invalid", () => {
       post.title = "   ";
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["title"]).toBeDefined();
     });
   });
@@ -58,12 +70,14 @@ describe("validate", () => {
     it("should consider an empty content as invalid", () => {
       post.content = "";
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["content"]).toBeDefined();
     });
 
     it("should consider spaces-only content as invalid", () => {
       post.content = "   ";
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["content"]).toBeDefined();
     });
   });
@@ -72,6 +86,7 @@ describe("validate", () => {
     it("should consider a urlTitle longer than 50 characters as invalid", () => {
       post.urlTitle = new Array(52).join("a");
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["urlTitle"]).toBeDefined();
     });
   });
@@ -81,18 +96,21 @@ describe("validate", () => {
       const tag = new Array(52).join("a");
       post.tags = [tag];
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["tags"]).toBeDefined();
     });
 
     it("should consider an empty tag as invalid", () => {
       post.tags = [""];
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["tags"]).toBeDefined();
     });
 
     it("should consider an only-spaces tag as invalid", () => {
       post.tags = ["    "];
       const result = Post.validate(post);
+      expect(result.isValid).toBe(false);
       expect(result.errors["tags"]).toBeDefined();
     });
   });
