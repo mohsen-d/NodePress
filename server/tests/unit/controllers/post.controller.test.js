@@ -134,3 +134,40 @@ describe("getPost", () => {
     expect(result.body).toEqual(post);
   });
 });
+
+describe("deletePosts", () => {
+  mockDelete = jest.fn();
+  postsDb.delete = mockDelete;
+  mockDelete.mockReturnValue(3);
+
+  let req = { body: { ids: [1, 2, 3] } };
+
+  let res = {
+    send(response) {
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+    status(code) {
+      return {
+        send(response) {
+          return {
+            status: code,
+            body: response,
+          };
+        },
+      };
+    },
+  };
+
+  it("should pass ids to database layer", () => {
+    posts.delete(req, res);
+    expect(postsDb.delete).toHaveBeenCalledWith(req.body.ids);
+  });
+
+  it("should return the number of deleted documents", () => {
+    const result = posts.delete(req, res);
+    expect(result.body).toBe(3);
+  });
+});

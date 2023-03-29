@@ -23,3 +23,8 @@ module.exports.getPost = function (req, res) {
   if (!post) return res.status(404).send("can't find the post");
   return res.send(post);
 };
+
+module.exports.delete = function (req, res) {
+  const result = postsDb.delete(req.body.ids);
+  return res.send(result);
+};
