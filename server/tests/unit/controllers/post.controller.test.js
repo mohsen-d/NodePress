@@ -53,3 +53,34 @@ describe("newPost", () => {
     expect(result.body).toEqual(newPost);
   });
 });
+
+describe("getPosts", () => {
+  const post = {
+    title: "title",
+    content: "content",
+  };
+
+  mockFind = jest.fn();
+  mockFind.mockReturnValue([post]);
+  postsDb.find = mockFind;
+
+  const req = { body: {} };
+
+  const res = {
+    send(response) {
+      return {
+        body: response,
+      };
+    },
+  };
+
+  it("should get posts from database layer", () => {
+    posts.getPosts(req, res);
+    expect(postsDb.find).toHaveBeenCalled();
+  });
+
+  it("should return found posts to client", () => {
+    const result = posts.getPosts(req, res);
+    expect(result.body).toEqual(expect.arrayContaining([post]));
+  });
+});

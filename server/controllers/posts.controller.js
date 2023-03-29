@@ -12,3 +12,8 @@ module.exports.newPost = function (req, res) {
 
   return res.send(newPost);
 };
+
+module.exports.getPosts = function (req, res) {
+  const list = postsDb.find(req.body);
+  return res.send(list);
+};
