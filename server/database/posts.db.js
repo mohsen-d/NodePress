@@ -8,6 +8,8 @@ module.exports.findOne = function (id) {};
 
 module.exports.delete = function (ids) {};
 
+module.exports.deletePost = function (id) {};
+
 module.exports.updateById = function (id, post) {};
 
 module.exports.updateDisplay = function (ids, display) {};

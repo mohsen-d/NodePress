@@ -135,6 +135,56 @@ describe("getPost", () => {
   });
 });
 
+describe("deletePost", () => {
+  const post = {
+    title: "title",
+    content: "content",
+  };
+
+  mockDeletePost = jest.fn();
+  postsDb.deletePost = mockDeletePost;
+
+  let req = { params: { id: 1 } };
+
+  let res = {
+    send(response) {
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+    status(code) {
+      return {
+        send(response) {
+          return {
+            status: code,
+            body: response,
+          };
+        },
+      };
+    },
+  };
+
+  it("should pass id to database layer", () => {
+    posts.deletePost(req, res);
+    expect(postsDb.deletePost).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no post", () => {
+    const result = posts.deletePost(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the deleted post", () => {
+    mockDeletePost.mockReturnValue(post);
+
+    const result = posts.deletePost(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(post);
+  });
+});
+
 describe("deletePosts", () => {
   mockDelete = jest.fn();
   postsDb.delete = mockDelete;

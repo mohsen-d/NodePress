@@ -29,6 +29,14 @@ module.exports.delete = function (req, res) {
   return res.send(result);
 };
 
+module.exports.deletePost = function (req, res) {
+  const post = postsDb.deletePost(req.params.id);
+
+  if (!post) return res.status(404).send("post not found");
+
+  return res.send(post);
+};
+
 module.exports.updatePost = function (req, res) {
   let post = new Post(req.body);
 
