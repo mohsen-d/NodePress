@@ -230,3 +230,53 @@ describe("updatePost", () => {
     expect(result.body).toEqual(post);
   });
 });
+
+describe("updatePostsDisplay", () => {
+  mockUpdate = jest.fn();
+  postsDb.updateDisplay = mockUpdate;
+  mockUpdate.mockReturnValue(3);
+
+  let req;
+
+  let res = {
+    send(response) {
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+    status(code) {
+      return {
+        send(response) {
+          return {
+            status: code,
+            body: response,
+          };
+        },
+      };
+    },
+  };
+
+  beforeEach(() => {
+    req = { body: { ids: [1, 2, 3], display: false } };
+  });
+
+  it("should return with 400 error is display value is invalid", () => {
+    req.body.display = 1;
+    const result = posts.updatePostsDisplay(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should pass ids to database layer", () => {
+    posts.updatePostsDisplay(req, res);
+    expect(postsDb.updateDisplay).toHaveBeenCalledWith(
+      req.body.ids,
+      req.body.display
+    );
+  });
+
+  it("should return the number of updated documents", () => {
+    const result = posts.updatePostsDisplay(req, res);
+    expect(result.body).toBe(3);
+  });
+});

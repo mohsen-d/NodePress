@@ -42,3 +42,11 @@ module.exports.updatePost = function (req, res) {
 
   return res.send(post);
 };
+
+module.exports.updatePostsDisplay = function (req, res) {
+  if (typeof req.body.display !== "boolean")
+    return res.status(400).send("bad request");
+
+  const result = postsDb.updateDisplay(req.body.ids, req.body.display);
+  return res.send(result);
+};

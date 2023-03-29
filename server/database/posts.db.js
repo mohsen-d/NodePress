@@ -9,3 +9,5 @@ module.exports.findOne = function (id) {};
 module.exports.delete = function (ids) {};
 
 module.exports.updateById = function (id, post) {};
+
+module.exports.updateDisplay = function (ids, display) {};
