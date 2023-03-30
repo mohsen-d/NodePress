@@ -1,6 +1,9 @@
 const Post = require("../models/post.model");
 
-module.exports.addPost = async function (newPost) {};
+module.exports.addPost = async function (newPost) {
+  await newPost.save();
+  return newPost;
+};
 
 module.exports.getPosts = async function (parameters) {};
 
