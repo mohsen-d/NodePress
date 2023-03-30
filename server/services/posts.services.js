@@ -36,3 +36,13 @@ module.exports.buildGetFilter = function (parameters) {
   }
   return filter;
 };
+
+module.exports.buildGetOptions = function (parameters = {}) {
+  const options = {};
+
+  options.sort = parameters.sort || { publish: -1 };
+  options.limit = parameters.pageSize || 10;
+  options.skip = parameters.page ? (parameters.page - 1) * options.limit : 0;
+
+  return options;
+};

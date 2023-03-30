@@ -72,3 +72,32 @@ describe("buildGetFilter", () => {
     expect(filter).not.toHaveProperty("title");
   });
 });
+
+describe("buildGetOptions", () => {
+  const options = {
+    sort: { publish: -1 },
+    limit: 10,
+    skip: 0,
+  };
+
+  it("should return default values if empty object is passed", () => {
+    const result = postsSrv.buildGetOptions({});
+    expect(result).toEqual(options);
+  });
+
+  it("should return default values if no parameter is passed", () => {
+    const result = postsSrv.buildGetOptions();
+    expect(result).toEqual(options);
+  });
+
+  it("should set options if parameters are valid", () => {
+    const result = postsSrv.buildGetOptions({
+      pageSize: 25,
+      page: 2,
+      sort: { title: 1 },
+    });
+    expect(result).toHaveProperty("sort", { title: 1 });
+    expect(result).toHaveProperty("limit", 25);
+    expect(result).toHaveProperty("skip", 25);
+  });
+});
