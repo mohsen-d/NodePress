@@ -38,9 +38,9 @@ describe("addPost", () => {
     req.body = { ...post };
   });
 
-  it("should return with error code 400 if new post is invalid", () => {
+  it("should return with error code 400 if new post is invalid", async () => {
     req.body.title = undefined;
-    const result = posts.addPost(req, res);
+    const result = await posts.addPost(req, res);
     expect(result.status).toBe(400);
     expect(result.body["title"]).not.toBeUndefined;
   });
@@ -50,9 +50,9 @@ describe("addPost", () => {
     expect(postsDb.addPost).toHaveBeenCalled();
   });
 
-  it("should return the inserted post", () => {
+  it("should return the inserted post", async () => {
     postsDb.addPost.mockReturnValue(post);
-    const result = posts.addPost(req, res);
+    const result = await posts.addPost(req, res);
     expect(result.body).toEqual(post);
   });
 });
@@ -60,14 +60,14 @@ describe("addPost", () => {
 describe("getPosts", () => {
   mockDbMethod("getPosts");
 
-  it("should get posts from database layer", () => {
-    posts.getPosts(req, res);
+  it("should get posts from database layer", async () => {
+    await posts.getPosts(req, res);
     expect(postsDb.getPosts).toHaveBeenCalled();
   });
 
-  it("should return found posts to client", () => {
+  it("should return found posts to client", async () => {
     postsDb.getPosts.mockReturnValue([post]);
-    const result = posts.getPosts(req, res);
+    const result = await posts.getPosts(req, res);
     expect(result.body).toEqual(expect.arrayContaining([post]));
   });
 });
@@ -77,20 +77,20 @@ describe("getPost", () => {
 
   req.params = { id: 1 };
 
-  it("should pass id to database layer", () => {
-    posts.getPost(req, res);
+  it("should pass id to database layer", async () => {
+    await posts.getPost(req, res);
     expect(postsDb.getPost).toHaveBeenCalledWith(req.params);
   });
 
-  it("should return 404 error if id matches no post", () => {
-    const result = posts.getPost(req, res);
+  it("should return 404 error if id matches no post", async () => {
+    const result = await posts.getPost(req, res);
     expect(result.status).toBe(404);
   });
 
-  it("should return the post if found", () => {
+  it("should return the post if found", async () => {
     postsDb.getPost.mockReturnValue(post);
 
-    const result = posts.getPost(req, res);
+    const result = await posts.getPost(req, res);
 
     expect(result.status).toBe(200);
     expect(result.body).toEqual(post);
@@ -102,20 +102,20 @@ describe("deletePost", () => {
 
   req.params = { id: 1 };
 
-  it("should pass id to database layer", () => {
-    posts.deletePost(req, res);
+  it("should pass id to database layer", async () => {
+    await posts.deletePost(req, res);
     expect(postsDb.deletePost).toHaveBeenCalledWith(req.params.id);
   });
 
-  it("should return 404 error if id matches no post", () => {
-    const result = posts.deletePost(req, res);
+  it("should return 404 error if id matches no post", async () => {
+    const result = await posts.deletePost(req, res);
     expect(result.status).toBe(404);
   });
 
-  it("should return the deleted post", () => {
+  it("should return the deleted post", async () => {
     postsDb.deletePost.mockReturnValue(post);
 
-    const result = posts.deletePost(req, res);
+    const result = await posts.deletePost(req, res);
 
     expect(result.status).toBe(200);
     expect(result.body).toEqual(post);
@@ -127,14 +127,14 @@ describe("deletePosts", () => {
 
   req.body = { ids: [1, 2, 3] };
 
-  it("should pass ids to database layer", () => {
-    posts.deletePosts(req, res);
+  it("should pass ids to database layer", async () => {
+    await posts.deletePosts(req, res);
     expect(postsDb.deletePosts).toHaveBeenCalledWith(req.body.ids);
   });
 
-  it("should return the number of deleted documents", () => {
+  it("should return the number of deleted documents", async () => {
     postsDb.deletePosts.mockReturnValue(3);
-    const result = posts.deletePosts(req, res);
+    const result = await posts.deletePosts(req, res);
     expect(result.body).toBe(3);
   });
 });
@@ -147,26 +147,26 @@ describe("updatePost", () => {
     req.body = { ...post };
   });
 
-  it("should return 400 error if data is invalid", () => {
+  it("should return 400 error if data is invalid", async () => {
     req.body.title = undefined;
-    const result = posts.updatePost(req, res);
+    const result = await posts.updatePost(req, res);
     expect(result.status).toBe(400);
   });
 
-  it("should pass valid post to database layer to be updated", () => {
-    const result = posts.updatePost(req, res);
+  it("should pass valid post to database layer to be updated", async () => {
+    const result = await posts.updatePost(req, res);
     expect(postsDb.updatePost).toHaveBeenCalled();
   });
 
-  it("should return 404 error if post not found", () => {
+  it("should return 404 error if post not found", async () => {
     postsDb.updatePost.mockReturnValue(undefined);
-    const result = posts.updatePost(req, res);
+    const result = await posts.updatePost(req, res);
     expect(result.status).toBe(404);
   });
 
-  it("should return the updated post", () => {
+  it("should return the updated post", async () => {
     postsDb.updatePost.mockReturnValue(post);
-    const result = posts.updatePost(req, res);
+    const result = await posts.updatePost(req, res);
     expect(result.body).toEqual(post);
   });
 });
@@ -178,24 +178,24 @@ describe("updatePostsDisplay", () => {
     req.body = { ids: [1, 2, 3], display: false };
   });
 
-  it("should return with 400 error is display value is invalid", () => {
+  it("should return with 400 error is display value is invalid", async () => {
     req.body.display = 1;
-    const result = posts.updatePostsDisplay(req, res);
+    const result = await posts.updatePostsDisplay(req, res);
     expect(result.status).toBe(400);
   });
 
-  it("should pass ids to database layer", () => {
-    posts.updatePostsDisplay(req, res);
+  it("should pass ids to database layer", async () => {
+    await posts.updatePostsDisplay(req, res);
     expect(postsDb.updatePostsDisplay).toHaveBeenCalledWith(
       req.body.ids,
       req.body.display
     );
   });
 
-  it("should return the number of updated documents", () => {
+  it("should return the number of updated documents", async () => {
     postsDb.updatePostsDisplay.mockReturnValue(3);
 
-    const result = posts.updatePostsDisplay(req, res);
+    const result = await posts.updatePostsDisplay(req, res);
     expect(result.body).toBe(3);
   });
 });
