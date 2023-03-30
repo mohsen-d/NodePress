@@ -1,5 +1,6 @@
 const Post = require("../models/post.model");
 const postsDb = require("../database/posts.db");
+const postsSrv = require("../services/posts.services");
 
 module.exports.addPost = function (req, res) {
   let newPost = new Post(req.body);
@@ -14,12 +15,14 @@ module.exports.addPost = function (req, res) {
 };
 
 module.exports.getPosts = function (req, res) {
-  const list = postsDb.getPosts(req.body);
+  const params = postsSrv.buildGetParameters(req, req.body);
+  const list = postsDb.getPosts(params);
   return res.send(list);
 };
 
 module.exports.getPost = function (req, res) {
-  const post = postsDb.getPost(req.params.id);
+  const params = postsSrv.buildGetParameters(req, req.params);
+  const post = postsDb.getPost(params);
   if (!post) return res.status(404).send("can't find the post");
   return res.send(post);
 };
