@@ -1,7 +1,7 @@
 const posts = require("../../../controllers/posts.controller");
 const postsDb = require("../../../database/posts.db");
 
-const req = {};
+const req = { user: { isAuthenticated: true } };
 
 const res = {
   send(response) {
@@ -79,7 +79,7 @@ describe("getPost", () => {
 
   it("should pass id to database layer", () => {
     posts.getPost(req, res);
-    expect(postsDb.getPost).toHaveBeenCalledWith(req.params.id);
+    expect(postsDb.getPost).toHaveBeenCalledWith(req.params);
   });
 
   it("should return 404 error if id matches no post", () => {
