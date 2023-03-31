@@ -90,14 +90,49 @@ describe("buildGetOptions", () => {
     expect(result).toEqual(options);
   });
 
+  it("should return default values if invalid values are sent", () => {
+    const result = postsSrv.buildGetOptions({
+      sort: { by: "display", order: true },
+      pageSize: "a",
+      page: "a",
+    });
+
+    expect(result).toHaveProperty("sort", { publish: -1 });
+    expect(result).toHaveProperty("limit", 10);
+    expect(result).toHaveProperty("skip", 0);
+  });
+
+  it("should return default value if out-of-range values are sent", () => {
+    const result = postsSrv.buildGetOptions({
+      sort: { by: "author", order: 2 },
+      pageSize: 1000,
+      page: 5000,
+    });
+
+    expect(result).toHaveProperty("sort", { publish: -1 });
+    expect(result).toHaveProperty("limit", 10);
+    expect(result).toHaveProperty("skip", 0);
+  });
+
   it("should set options if parameters are valid", () => {
     const result = postsSrv.buildGetOptions({
       pageSize: 25,
       page: 2,
-      sort: { title: 1 },
+      sort: { by: "title", order: 1 },
     });
     expect(result).toHaveProperty("sort", { title: 1 });
     expect(result).toHaveProperty("limit", 25);
     expect(result).toHaveProperty("skip", 25);
+  });
+
+  it("should not reject numeric values sent in string as invalid", () => {
+    const result = postsSrv.buildGetOptions({
+      pageSize: "15",
+      page: "3",
+      sort: { by: "title", order: "-1" },
+    });
+    expect(result).toHaveProperty("sort", { title: -1 });
+    expect(result).toHaveProperty("limit", 15);
+    expect(result).toHaveProperty("skip", 30);
   });
 });

@@ -1,3 +1,5 @@
+const Joi = require("joi");
+
 module.exports.buildGetParameters = function (req, params) {
   if (req.user.isAuthenticated) return params;
   params.display = true;
@@ -40,9 +42,27 @@ module.exports.buildGetFilter = function (parameters) {
 module.exports.buildGetOptions = function (parameters = {}) {
   const options = {};
 
-  options.sort = parameters.sort || { publish: -1 };
-  options.limit = parameters.pageSize || 10;
-  options.skip = parameters.page ? (parameters.page - 1) * options.limit : 0;
+  const sortSchema = Joi.object({
+    by: Joi.string()
+      .required()
+      .valid("author", "subtitle", "title", "urltitle", "publish"),
+    order: Joi.number().required().valid(1, -1),
+  }).required();
+
+  let validationResult = sortSchema.validate(parameters.sort);
+  options.sort = validationResult.error
+    ? { publish: -1 }
+    : { [validationResult.value.by]: validationResult.value.order };
+
+  const pageSizeSchema = Joi.number().required().min(10).max(50);
+  validationResult = pageSizeSchema.validate(parameters.pageSize);
+  options.limit = validationResult.error ? 10 : validationResult.value;
+
+  const pageSchema = Joi.number().required().min(1).max(1000);
+  validationResult = pageSchema.validate(parameters.page);
+  options.skip = validationResult.error
+    ? 0
+    : (validationResult.value - 1) * options.limit;
 
   return options;
 };
