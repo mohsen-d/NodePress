@@ -1,11 +1,18 @@
 const Post = require("../models/post.model");
+const postsSrv = require("../services/posts.services");
 
 module.exports.addPost = async function (newPost) {
   await newPost.save();
   return newPost;
 };
 
-module.exports.getPosts = async function (parameters) {};
+module.exports.getPosts = async function (parameters) {
+  const filters = postsSrv.buildGetFilter(parameters);
+  const options = postsSrv.buildGetOptions(parameters);
+
+  const list = await Post.find(filters, null, options);
+  return list;
+};
 
 module.exports.getPost = async function (id) {};
 

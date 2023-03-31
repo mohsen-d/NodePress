@@ -79,7 +79,7 @@ module.exports.buildGetOptions = function (parameters = {}) {
     ? { publish: -1 }
     : { [validationResult.value.by]: validationResult.value.order };
 
-  const pageSizeSchema = Joi.number().required().min(10).max(50);
+  const pageSizeSchema = Joi.number().required().min(1).max(50);
   validationResult = pageSizeSchema.validate(parameters.pageSize);
   options.limit = validationResult.error ? 10 : validationResult.value;
 
