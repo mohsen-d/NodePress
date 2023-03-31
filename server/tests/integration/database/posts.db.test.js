@@ -158,3 +158,32 @@ describe("getPosts", () => {
     });
   });
 });
+
+describe("getPost", () => {
+  let post = {
+    title: "t1",
+    content: "c1",
+    display: false,
+  };
+
+  beforeAll(async () => {
+    await Post.insertMany([post]);
+  });
+
+  afterAll(async () => {
+    await Post.deleteMany({});
+  });
+
+  it("should return post with given _id", async () => {
+    const result = await postsDb.getPost({ _id: post._id });
+
+    expect(result).not.toBeUndefined();
+    expect(result.title).toBe("t1");
+  });
+
+  it("should not return post with given _id if display is false", async () => {
+    const result = await postsDb.getPost({ _id: post._id, display: true });
+
+    expect(result).toBeNull();
+  });
+});

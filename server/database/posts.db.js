@@ -14,7 +14,11 @@ module.exports.getPosts = async function (parameters) {
   return list;
 };
 
-module.exports.getPost = async function (id) {};
+module.exports.getPost = async function (parameters) {
+  const filters = postsSrv.buildGetFilter(parameters);
+  const post = await Post.findOne(filters);
+  return post;
+};
 
 module.exports.deletePosts = async function (ids) {};
 
