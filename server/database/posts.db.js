@@ -25,7 +25,10 @@ module.exports.deletePosts = async function (ids) {
   return result;
 };
 
-module.exports.deletePost = async function (id) {};
+module.exports.deletePost = async function (id) {
+  const deletedPost = await Post.findByIdAndDelete(id);
+  return deletedPost;
+};
 
 module.exports.updatePost = async function (id, post) {};
 
