@@ -187,3 +187,43 @@ describe("getPost", () => {
     expect(result).toBeNull();
   });
 });
+
+describe("deletePosts", () => {
+  let posts;
+
+  beforeEach(async () => {
+    posts = await Post.insertMany([
+      {
+        title: "t1",
+        content: "c1",
+      },
+      {
+        title: "t2",
+        content: "c2",
+      },
+      {
+        title: "t3",
+        content: "c3",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Post.deleteMany({});
+  });
+
+  it("should delete posts with given ids", async () => {
+    const { deletedCount } = await postsDb.deletePosts([posts[0]._id]);
+    expect(deletedCount).toBe(1);
+    const remaining = await Post.find();
+    expect(remaining.length).toBe(2);
+  });
+
+  it("should return 0 if given ids match no post", async () => {
+    const id = new Array(25).join(1);
+    const { deletedCount } = await postsDb.deletePosts([id]);
+    expect(deletedCount).toBe(0);
+    const remaining = await Post.find();
+    expect(remaining.length).toBe(3);
+  });
+});
