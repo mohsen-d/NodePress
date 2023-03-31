@@ -8,13 +8,38 @@ module.exports.buildGetParameters = function (req, params) {
 
 module.exports.buildGetFilter = function (parameters) {
   const filter = {};
+  const params = { ...parameters };
 
-  for (const param in parameters) {
-    if (parameters[param] === undefined || parameters[param] === null) continue;
+  const schema = Joi.object({
+    _id: Joi.string().hex().length(24),
+    author: Joi.string().max(50).truncate(),
+    subTitle: Joi.string().max(50).truncate(),
+    title: Joi.string().max(50).truncate(),
+    content: Joi.string().max(50).truncate(),
+    urlTitle: Joi.string().max(50).truncate(),
+    tags: Joi.string().max(50).truncate(),
+    display: Joi.boolean(),
+    publish: Joi.object().keys({
+      from: Joi.date(),
+      to: Joi.date(),
+    }),
+  });
+
+  const { value, error } = schema.validate(params, { abortEarly: false });
+
+  if (error) {
+    error.details.forEach((d) => {
+      const key = d.context.key;
+      delete params[key];
+    });
+  }
+
+  for (const param in params) {
+    if (params[param] === undefined || params[param] === null) continue;
 
     switch (true) {
       case ["_id", "display"].includes(param):
-        filter[param] = parameters[param];
+        filter[param] = params[param];
         break;
 
       case [
@@ -25,13 +50,13 @@ module.exports.buildGetFilter = function (parameters) {
         "urlTitle",
         "tags",
       ].includes(param):
-        filter[param] = new RegExp(parameters[param], "i");
+        filter[param] = new RegExp(params[param].substring(0, 50), "i");
         break;
 
       case param == "publish":
         filter[param] = {
-          $gte: parameters[param].from,
-          $lte: parameters[param].to,
+          $gte: params[param].from,
+          $lte: params[param].to,
         };
         break;
     }

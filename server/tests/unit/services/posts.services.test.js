@@ -17,8 +17,10 @@ describe("buildGetParameters", () => {
 
 describe("buildGetFilter", () => {
   it("should use the sent value for _id and display", () => {
-    const filter = postsSrv.buildGetFilter({ _id: 1, display: true });
-    expect(filter).toHaveProperty("_id", 1);
+    const id = new Array(25).join(1);
+    const filter = postsSrv.buildGetFilter({ _id: id, display: true });
+
+    expect(filter).toHaveProperty("_id", id);
     expect(filter).toHaveProperty("display", true);
   });
 
@@ -31,6 +33,8 @@ describe("buildGetFilter", () => {
       urlTitle: "urlTitle",
       tags: "tags",
     });
+
+    console.log(filter);
 
     expect(filter).toHaveProperty("author", /author/i);
     expect(filter).toHaveProperty("subTitle", /subTitle/i);
@@ -70,6 +74,31 @@ describe("buildGetFilter", () => {
     expect(filter).toHaveProperty("display", true);
     expect(filter).not.toHaveProperty("_id");
     expect(filter).not.toHaveProperty("title");
+  });
+
+  it("should skip parameter if value is invalid", () => {
+    const filter = postsSrv.buildGetFilter({
+      _id: 1,
+      title: "",
+      publish: 2,
+      display: true,
+    });
+
+    expect(filter).toHaveProperty("display", true);
+    expect(filter).not.toHaveProperty("_id");
+    expect(filter).not.toHaveProperty("title");
+    expect(filter).not.toHaveProperty("publish");
+  });
+
+  it("should truncate string parameters longer than 50 characters instead of deleting them", () => {
+    const filter = postsSrv.buildGetFilter({
+      subTitle: new Array(55).join("a"),
+    });
+
+    expect(filter).toHaveProperty(
+      "subTitle",
+      new RegExp(new Array(51).join("a"), "i")
+    );
   });
 });
 
