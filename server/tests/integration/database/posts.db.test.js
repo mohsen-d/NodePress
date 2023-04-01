@@ -329,3 +329,37 @@ describe("updatePost", () => {
     expect(updatedPost).toBeNull();
   });
 });
+
+describe("updatePostsDisplay", () => {
+  let posts;
+
+  beforeEach(async () => {
+    posts = await Post.insertMany([
+      {
+        title: "t1",
+        content: "c1",
+      },
+      {
+        title: "t2",
+        content: "c2",
+      },
+      {
+        title: "t2",
+        content: "c2",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Post.deleteMany({});
+  });
+
+  it("should change display for posts with given ids", async () => {
+    const ids = [posts[0]._id, posts[2]._id];
+    const updatedCount = await postsDb.updatePostsDisplay(ids, false);
+    expect(updatedCount).toBe(2);
+
+    const updatedPosts = await Post.find({ display: false });
+    expect(updatedPosts.length).toBe(2);
+  });
+});
