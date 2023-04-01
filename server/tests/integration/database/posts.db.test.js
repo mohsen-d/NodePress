@@ -267,3 +267,65 @@ describe("deletePost", () => {
     expect(remaining.length).toBe(3);
   });
 });
+
+describe("updatePost", () => {
+  let posts;
+
+  beforeEach(async () => {
+    posts = await Post.insertMany([
+      {
+        author: "a1",
+        subTitle: "st1",
+        title: "t1",
+        content: "c1",
+        urlTitle: "u1",
+        tags: ["tag1"],
+        display: false,
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Post.deleteMany({});
+  });
+
+  it("should update the post with given id", async () => {
+    const updates = {
+      author: "author",
+      subTitle: "subTitle",
+      title: "title",
+      content: "content",
+      urlTitle: "urlTitle",
+      tags: ["tag2"],
+      display: true,
+    };
+
+    await postsDb.updatePost(posts[0]._id, updates);
+
+    const updatedPost = await Post.findById(posts[0]._id);
+    expect(updatedPost).toHaveProperty("title", "title");
+    expect(updatedPost).toHaveProperty("author", "author");
+    expect(updatedPost).toHaveProperty("subTitle", "subTitle");
+    expect(updatedPost).toHaveProperty("content", "content");
+    expect(updatedPost).toHaveProperty("urlTitle", "urlTitle");
+    expect(updatedPost).toHaveProperty("tags", ["tag2"]);
+    expect(updatedPost).toHaveProperty("display", true);
+  });
+
+  it("should return null if given id match no post", async () => {
+    const id = new Array(25).join(1);
+    const updates = {
+      author: "author",
+      subTitle: "subTitle",
+      title: "title",
+      content: "content",
+      urlTitle: "urlTitle",
+      tags: ["tag2"],
+      display: true,
+    };
+
+    const updatedPost = await postsDb.updatePost(id, updates);
+
+    expect(updatedPost).toBeNull();
+  });
+});

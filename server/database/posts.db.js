@@ -30,6 +30,9 @@ module.exports.deletePost = async function (id) {
   return deletedPost;
 };
 
-module.exports.updatePost = async function (id, post) {};
+module.exports.updatePost = async function (id, post) {
+  const updatedPost = await Post.findByIdAndUpdate(id, { $set: post });
+  return updatedPost;
+};
 
 module.exports.updatePostsDisplay = async function (ids, display) {};
