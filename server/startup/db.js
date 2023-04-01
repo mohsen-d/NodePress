@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const config = require("config");
 
 module.exports = function () {
-  const db = "mongodb://127.0.0.1/nodepress";
+  const db = config.get("database");
   mongoose.connect(db).then(() => console.log(`Connected to ${db}...`));
 };
