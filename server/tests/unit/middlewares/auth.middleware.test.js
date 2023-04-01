@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const config = require("config");
 const middleware = require("../../../middlewares/auth.middleware");
 
 let status;
@@ -57,7 +58,10 @@ describe("admin routes", () => {
   });
 
   it("should pass if token is valid", () => {
-    const token = jwt.sign({ username: "mohsen", _id: 1 }, "jwtPrivateKey");
+    const token = jwt.sign(
+      { username: "mohsen", _id: 1 },
+      config.get("jwtPrivateKey")
+    );
     req.route.path = "/admin/posts";
     req.header = () => token;
 
@@ -66,7 +70,10 @@ describe("admin routes", () => {
   });
 
   it("should put decoded data in req.user if token is valid", () => {
-    const token = jwt.sign({ username: "mohsen", _id: 1 }, "jwtPrivateKey");
+    const token = jwt.sign(
+      { username: "mohsen", _id: 1 },
+      config.get("jwtPrivateKey")
+    );
     req.route.path = "/admin/posts";
     req.header = () => token;
 
