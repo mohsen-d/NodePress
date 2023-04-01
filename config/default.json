@@ -1,4 +1,4 @@
 {
-  "database": "",
-  "jwtPrivateKey": ""
+  "database": "undefined",
+  "jwtPrivateKey": "undefined"
 }
