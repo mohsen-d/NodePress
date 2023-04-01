@@ -213,7 +213,7 @@ describe("deletePosts", () => {
   });
 
   it("should delete posts with given ids", async () => {
-    const { deletedCount } = await postsDb.deletePosts([posts[0]._id]);
+    const deletedCount = await postsDb.deletePosts([posts[0]._id]);
     expect(deletedCount).toBe(1);
     const remaining = await Post.find();
     expect(remaining.length).toBe(2);
@@ -221,7 +221,7 @@ describe("deletePosts", () => {
 
   it("should return 0 if given ids match no post", async () => {
     const id = new Array(25).join(1);
-    const { deletedCount } = await postsDb.deletePosts([id]);
+    const deletedCount = await postsDb.deletePosts([id]);
     expect(deletedCount).toBe(0);
     const remaining = await Post.find();
     expect(remaining.length).toBe(3);

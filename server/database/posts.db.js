@@ -22,7 +22,7 @@ module.exports.getPost = async function (parameters) {
 
 module.exports.deletePosts = async function (ids) {
   const result = await Post.deleteMany({ _id: { $in: ids } });
-  return result;
+  return result.deletedCount;
 };
 
 module.exports.deletePost = async function (id) {

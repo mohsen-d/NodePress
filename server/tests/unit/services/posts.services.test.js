@@ -34,8 +34,6 @@ describe("buildGetFilter", () => {
       tags: "tags",
     });
 
-    console.log(filter);
-
     expect(filter).toHaveProperty("author", /author/i);
     expect(filter).toHaveProperty("subTitle", /subTitle/i);
     expect(filter).toHaveProperty("title", /title/i);
