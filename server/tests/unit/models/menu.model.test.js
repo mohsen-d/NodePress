@@ -8,6 +8,7 @@ describe("validate", () => {
       title: "menu",
       url: "http://",
       parentId: new mongoose.Types.ObjectId().toHexString(),
+      ancestors: [new mongoose.Types.ObjectId().toHexString()],
     });
   });
 
@@ -63,6 +64,16 @@ describe("validate", () => {
       const result = Menu.validate(menu);
       expect(result.isValid).toBe(false);
       expect(result.errors["parentId"]).toBeDefined();
+    });
+  });
+
+  describe("ancestors", () => {
+    it("should consider a non-objectId ancestor as invalid", () => {
+      menu.ancestors = [1];
+      const result = Menu.validate(menu);
+      expect(result.isValid).toBe(false);
+      console.log(result);
+      expect(result.errors["ancestors.0"]).toBeDefined();
     });
   });
 });
