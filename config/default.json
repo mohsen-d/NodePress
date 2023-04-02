@@ -1,4 +1,9 @@
 {
   "database": "undefined",
-  "jwtPrivateKey": "undefined"
+  "jwtPrivateKey": "undefined",
+  "errors": {
+    "404": "can't find the $var.",
+    "400": "bad request. invalid $var.",
+    "401": "Access denied. Please login first."
+  }
 }
