@@ -57,7 +57,7 @@ module.exports.updatePost = async function (req, res) {
 
 module.exports.updatePostsDisplay = async function (req, res) {
   if (typeof req.body.display !== "boolean")
-    return res.status(400).send(errorsSrv._400());
+    return res.status(400).send(errorsSrv._400("id(s)"));
 
   const result = await postsDb.updatePostsDisplay(
     req.body.ids,
