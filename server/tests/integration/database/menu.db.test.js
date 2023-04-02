@@ -200,3 +200,45 @@ describe("deleteMenus", () => {
     expect(deletedMenus.length).toBe(0);
   });
 });
+
+describe("updatePost", () => {
+  let menu;
+
+  beforeEach(async () => {
+    menu = await Menu.insertMany([
+      {
+        title: "t1",
+        url: "u1",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Menu.deleteMany({});
+  });
+
+  it("should update the menu with given id", async () => {
+    const updates = {
+      title: "title",
+      url: "url",
+    };
+
+    await menuDb.updateMenu(menu[0]._id, updates);
+
+    const updatedMenu = await Menu.findById(menu[0]._id);
+    expect(updatedMenu).toHaveProperty("title", "title");
+    expect(updatedMenu).toHaveProperty("url", "url");
+  });
+
+  it("should return null if given id match no menu", async () => {
+    const id = new Array(25).join(1);
+    const updates = {
+      title: "title",
+      url: "url",
+    };
+
+    const updatedMenu = await menuDb.updateMenu(id, updates);
+
+    expect(updatedMenu).toBeNull();
+  });
+});

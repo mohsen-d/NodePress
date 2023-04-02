@@ -33,6 +33,11 @@ module.exports.deleteMenus = async function (ids) {
   return result.deletedCount;
 };
 
+module.exports.updateMenu = async function (id, menu) {
+  const updatedMenu = await Menu.findByIdAndUpdate(id, { $set: menu });
+  return updatedMenu;
+};
+
 /*
 module.exports.getMenus = async function (parameters) {
   const filters = menusSrv.buildGetFilter(parameters);
@@ -50,8 +55,5 @@ module.exports.getMenu = async function (parameters) {
 
 
 
-module.exports.updateMenu = async function (id, menu) {
-  const updatedMenu = await Menu.findByIdAndUpdate(id, { $set: menu });
-  return updatedMenu;
-};
+
 */
