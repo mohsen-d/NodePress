@@ -53,6 +53,20 @@ module.exports.getMenuAndDescendants = async function (id) {
   return list;
 };
 
+module.exports.getMenuAndAncestors = async function (id) {
+  const list = [];
+  const menu = await Menu.findById(id);
+  if (menu) {
+    list.push(menu);
+    if (menu.ancestors.length > 0) {
+      const ancestors = await Menu.find({ _id: { $in: menu.ancestors } });
+      list.push(...ancestors);
+    }
+  }
+  console.log(list);
+  return list;
+};
+
 /*
 
 module.exports.getMenu = async function (parameters) {
