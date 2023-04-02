@@ -18,6 +18,14 @@ module.exports.addMenu = async function (newMenu) {
   await newMenu.save();
   return newMenu;
 };
+
+module.exports.deleteMenu = async function (id) {
+  const result = await Menu.deleteMany({
+    $or: [{ _id: id }, { ancestors: id }],
+  });
+  return result.deletedCount;
+};
+
 /*
 module.exports.getMenus = async function (parameters) {
   const filters = menusSrv.buildGetFilter(parameters);
@@ -38,10 +46,6 @@ module.exports.deleteMenus = async function (ids) {
   return result.deletedCount;
 };
 
-module.exports.deleteMenu = async function (id) {
-  const deletedMenu = await Menu.findByIdAndDelete(id);
-  return deletedMenu;
-};
 
 module.exports.updateMenu = async function (id, menu) {
   const updatedMenu = await Menu.findByIdAndUpdate(id, { $set: menu });

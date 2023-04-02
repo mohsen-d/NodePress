@@ -102,3 +102,53 @@ describe("addMenu", () => {
     expect(grandChildMenu.ancestors[1].toHexString()).toBe(_childId);
   });
 });
+
+describe("deleteMenu", () => {
+  let menu;
+  const _id = new mongoose.Types.ObjectId().toHexString();
+  const _childId = new mongoose.Types.ObjectId().toHexString();
+  const _grandChildId = new mongoose.Types.ObjectId().toHexString();
+
+  beforeEach(async () => {
+    menu = await Menu.insertMany([
+      {
+        _id: _id,
+        title: "t1",
+      },
+      {
+        _id: _childId,
+        parentId: _id,
+        ancestors: [_id],
+        title: "t2",
+      },
+      {
+        _id: _grandChildId,
+        parentId: _childId,
+        ancestors: [_id, _childId],
+        title: "t3",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Menu.deleteMany({});
+  });
+
+  it("should delete menu with the given id", async () => {
+    const deletedCount = await menuDb.deleteMenu(_grandChildId);
+    expect(deletedCount).toBe(1);
+
+    const deletedMenu = await Menu.findById(_grandChildId);
+    expect(deletedMenu).toBeNull();
+  });
+
+  it("should delete menu with the given id and its child menus", async () => {
+    const deletedCount = await menuDb.deleteMenu(_childId);
+    expect(deletedCount).toBe(2);
+
+    const deletedMenus = await Menu.find({
+      $or: [{ _id: _childId }, { _id: _grandChildId }],
+    });
+    expect(deletedMenus.length).toBe(0);
+  });
+});
