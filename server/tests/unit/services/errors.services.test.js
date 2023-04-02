@@ -9,6 +9,6 @@ it("should return the msg corresponding to the error code", () => {
 
 it("should use default value if msgVariable is not provided", () => {
   const msg = errors._400();
-  const expected = config.get("errors.400").replace("$var", "do the task");
+  const expected = config.get("errors.400").replace("$var", "data");
   expect(msg).toBe(expected);
 });
