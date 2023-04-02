@@ -354,3 +354,39 @@ describe("getMenus", () => {
     });
   });
 });
+
+describe("getMenuAndDescendants", () => {
+  const _id = new mongoose.Types.ObjectId().toHexString();
+  const _childId = new mongoose.Types.ObjectId().toHexString();
+  const _grandChildId = new mongoose.Types.ObjectId().toHexString();
+
+  beforeEach(async () => {
+    await Menu.insertMany([
+      {
+        _id: _id,
+        title: "t1",
+      },
+      {
+        _id: _childId,
+        parentId: _id,
+        ancestors: [_id],
+        title: "t2",
+      },
+      {
+        _id: _grandChildId,
+        parentId: _childId,
+        ancestors: [_id, _childId],
+        title: "t3",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Menu.deleteMany({});
+  });
+
+  it("should return menu with given id and its children", async () => {
+    const menu = await menuDb.getMenuAndDescendants(_id);
+    expect(menu.length).toBe(3);
+  });
+});

@@ -45,6 +45,14 @@ module.exports.getMenus = async function (parameters) {
   const list = await Menu.find(filters, null, options);
   return list;
 };
+
+module.exports.getMenuAndDescendants = async function (id) {
+  const list = await Menu.find({
+    $or: [{ _id: id }, { ancestors: id }],
+  });
+  return list;
+};
+
 /*
 
 module.exports.getMenu = async function (parameters) {
