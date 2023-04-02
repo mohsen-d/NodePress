@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
+const errorsSrv = require("../services/errors.services");
 
 module.exports = function (req, res, next) {
   if (shallIntercept(req)) {
     if (req.params.id && !areValid([req.params.id]))
-      return res.status(400).send("invalid id");
+      return res.status(400).send(errorsSrv._400("id"));
     if (req.body.ids && !areValid(req.body.ids))
-      return res.status(400).send("invalid ids");
+      return res.status(400).send(errorsSrv._400("ids"));
   }
   next();
 };
