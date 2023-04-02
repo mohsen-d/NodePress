@@ -201,7 +201,7 @@ describe("deleteMenus", () => {
   });
 });
 
-describe("updatePost", () => {
+describe("updateMenu", () => {
   let menu;
 
   beforeEach(async () => {
@@ -240,5 +240,117 @@ describe("updatePost", () => {
     const updatedMenu = await menuDb.updateMenu(id, updates);
 
     expect(updatedMenu).toBeNull();
+  });
+});
+
+describe("getMenus", () => {
+  let menu;
+
+  const _id = new mongoose.Types.ObjectId().toHexString();
+  const _childId = new mongoose.Types.ObjectId().toHexString();
+  const _grandChildId = new mongoose.Types.ObjectId().toHexString();
+
+  beforeEach(async () => {
+    menu = await Menu.insertMany([
+      {
+        _id: _id,
+        title: "t1",
+      },
+      {
+        _id: _childId,
+        parentId: _id,
+        ancestors: [_id],
+        title: "t2",
+      },
+      {
+        _id: _grandChildId,
+        parentId: _childId,
+        ancestors: [_id, _childId],
+        title: "t3",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Menu.deleteMany({});
+  });
+
+  it("should return all menus if no filter or option is sent", async () => {
+    const menus = await menuDb.getMenus();
+    expect(menus.length).toBe(3);
+  });
+
+  describe("options", () => {
+    it("should sort menus by given field in given order", async () => {
+      const options = { sort: { by: "title", order: -1 } };
+
+      const menus = await menuDb.getMenus(options);
+      expect(menus.length).toBe(3);
+      expect(menus[0].title).toBe("t3");
+    });
+
+    it("should limit menus according to the pageSize", async () => {
+      const options = { pageSize: 2 };
+
+      const menus = await menuDb.getMenus(options);
+      expect(menus.length).toBe(2);
+    });
+
+    it("should return menus according to the pageSize and page", async () => {
+      const options = { pageSize: 2, page: 2 };
+
+      const menus = await menuDb.getMenus(options);
+      expect(menus.length).toBe(1);
+    });
+
+    it("should return sorted menus according to the pageSize and page", async () => {
+      const options = {
+        sort: { by: "title", order: -1 },
+        pageSize: 2,
+        page: 2,
+      };
+
+      const menus = await menuDb.getMenus(options);
+      expect(menus.length).toBe(1);
+      expect(menus[0].title).toBe("t1");
+    });
+
+    it("should work with numbers sent in strings", async () => {
+      const options = {
+        sort: { by: "title", order: "-1" },
+        pageSize: "2",
+        page: "2",
+      };
+
+      const menus = await menuDb.getMenus(options);
+      expect(menus.length).toBe(1);
+      expect(menus[0].title).toBe("t1");
+    });
+  });
+
+  describe("filters", () => {
+    it("should return empty array if no menu matches filters", async () => {
+      const filters = { title: "tttt" };
+      const menus = await menuDb.getMenus(filters);
+      expect(menus.length).toBe(0);
+    });
+
+    it("should return menus which contain the keyword in their string fields", async () => {
+      const filters = { title: "1" };
+      const menus = await menuDb.getMenus(filters);
+      expect(menus.length).toBe(1);
+    });
+
+    it("should return menus which meet all filters", async () => {
+      const filters = { _id: _id, title: "1" };
+      const menus = await menuDb.getMenus(filters);
+      expect(menus.length).toBe(1);
+    });
+
+    it("should return descendants of a menu", async () => {
+      const filters = { ancestors: _id };
+      const menus = await menuDb.getMenus(filters);
+      expect(menus.length).toBe(2);
+    });
   });
 });

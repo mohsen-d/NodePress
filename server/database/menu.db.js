@@ -1,5 +1,5 @@
 const Menu = require("../models/menu.model");
-//const menusSrv = require("../services/menus.services");
+const menuSrv = require("../services/menu.services");
 
 module.exports.addMenu = async function (newMenu) {
   if (newMenu.parentId) {
@@ -38,14 +38,14 @@ module.exports.updateMenu = async function (id, menu) {
   return updatedMenu;
 };
 
-/*
 module.exports.getMenus = async function (parameters) {
-  const filters = menusSrv.buildGetFilter(parameters);
-  const options = menusSrv.buildGetOptions(parameters);
+  const filters = menuSrv.buildGetFilter(parameters);
+  const options = menuSrv.buildGetOptions(parameters);
 
   const list = await Menu.find(filters, null, options);
   return list;
 };
+/*
 
 module.exports.getMenu = async function (parameters) {
   const filters = menusSrv.buildGetFilter(parameters);
