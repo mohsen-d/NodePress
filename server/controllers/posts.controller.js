@@ -1,6 +1,7 @@
 const Post = require("../models/post.model");
 const postsDb = require("../database/posts.db");
 const postsSrv = require("../services/posts.services");
+const errorsSrv = require("../services/errors.services");
 
 module.exports.addPost = async function (req, res) {
   let newPost = new Post(req.body);
@@ -23,7 +24,7 @@ module.exports.getPosts = async function (req, res) {
 module.exports.getPost = async function (req, res) {
   const params = postsSrv.buildGetParameters(req, req.params);
   const post = await postsDb.getPost(params);
-  if (!post) return res.status(404).send("can't find the post");
+  if (!post) return res.status(404).send(errorsSrv._404("post"));
   return res.send(post);
 };
 
@@ -35,7 +36,7 @@ module.exports.deletePosts = async function (req, res) {
 module.exports.deletePost = async function (req, res) {
   const post = await postsDb.deletePost(req.params.id);
 
-  if (!post) return res.status(404).send("post not found");
+  if (!post) return res.status(404).send(errorsSrv._404("post"));
 
   return res.send(post);
 };
@@ -49,14 +50,14 @@ module.exports.updatePost = async function (req, res) {
 
   post = await postsDb.updatePost(req.params.id, post);
 
-  if (!post) return res.status(404).send("post not found");
+  if (!post) return res.status(404).send(errorsSrv._404("post"));
 
   return res.send(post);
 };
 
 module.exports.updatePostsDisplay = async function (req, res) {
   if (typeof req.body.display !== "boolean")
-    return res.status(400).send("bad request");
+    return res.status(400).send(errorsSrv._400());
 
   const result = await postsDb.updatePostsDisplay(
     req.body.ids,
