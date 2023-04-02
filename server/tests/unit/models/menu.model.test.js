@@ -71,8 +71,8 @@ describe("validate", () => {
     it("should consider a non-objectId ancestor as invalid", () => {
       menu.ancestors = [1];
       const result = Menu.validate(menu);
+
       expect(result.isValid).toBe(false);
-      console.log(result);
       expect(result.errors["ancestors.0"]).toBeDefined();
     });
   });
