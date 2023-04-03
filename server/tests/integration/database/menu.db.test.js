@@ -426,3 +426,38 @@ describe("getMenuAndAncestors", () => {
     expect(menu.length).toBe(3);
   });
 });
+
+describe("getMenu", () => {
+  const _id = new mongoose.Types.ObjectId().toHexString();
+
+  beforeEach(async () => {
+    await Menu.insertMany([
+      {
+        _id: _id,
+        title: "t1",
+      },
+      {
+        title: "t1",
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    await Menu.deleteMany({});
+  });
+
+  describe("filters", () => {
+    it("should return null if no menu matches filters", async () => {
+      const filters = { title: "tttt" };
+      const menu = await menuDb.getMenu(filters);
+      expect(menu).toBeNull();
+    });
+
+    it("should return only one menu which meets all filters", async () => {
+      const filters = { title: "t1" };
+      const menu = await menuDb.getMenu(filters);
+      expect(menu).not.toBeNull();
+      expect(Array.isArray(menu)).toBe(false);
+    });
+  });
+});
