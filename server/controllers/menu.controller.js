@@ -26,3 +26,8 @@ module.exports.deleteMenu = async function (req, res) {
 
   return res.send(deletedCount);
 };
+
+module.exports.deleteMenus = async function (req, res) {
+  const result = await menuDb.deleteMenus(req.body.ids);
+  return res.send(result);
+};

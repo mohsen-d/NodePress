@@ -91,3 +91,20 @@ describe("deleteMenu", () => {
     expect(result.body).toEqual(3);
   });
 });
+
+describe("deleteMenus", () => {
+  mockDbMethod("deleteMenus");
+
+  req.body = { ids: [1, 2, 3] };
+
+  it("should pass ids to database layer", async () => {
+    await menuController.deleteMenus(req, res);
+    expect(menuDb.deleteMenus).toHaveBeenCalledWith(req.body.ids);
+  });
+
+  it("should return the number of deleted documents", async () => {
+    menuDb.deleteMenus.mockReturnValue(3);
+    const result = await menuController.deleteMenus(req, res);
+    expect(result.body).toBe(3);
+  });
+});
