@@ -18,3 +18,11 @@ module.exports.addMenu = async function (req, res) {
 
   return res.send(newMenu);
 };
+
+module.exports.deleteMenu = async function (req, res) {
+  const deletedCount = await menuDb.deleteMenu(req.params.id);
+
+  if (deletedCount == 0) return res.status(404).send(errorsSrv._404("menu"));
+
+  return res.send(deletedCount);
+};

@@ -64,3 +64,30 @@ describe("addMenu", () => {
     expect(result.ancestors).toBeUndefined();
   });
 });
+
+describe("deleteMenu", () => {
+  mockDbMethod("deleteMenu");
+
+  req.params = { id: 1 };
+
+  it("should pass id to database layer", async () => {
+    await menuController.deleteMenu(req, res);
+    expect(menuDb.deleteMenu).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no menu", async () => {
+    menuDb.deleteMenu.mockReturnValue(0);
+
+    const result = await menuController.deleteMenu(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the number of deleted menu and its descendants", async () => {
+    menuDb.deleteMenu.mockReturnValue(3);
+
+    const result = await menuController.deleteMenu(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(3);
+  });
+});
