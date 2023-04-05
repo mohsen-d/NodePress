@@ -48,3 +48,9 @@ module.exports.updateMenu = async function (req, res) {
 
   return res.send(menu);
 };
+
+module.exports.getMenu = async function (req, res) {
+  const menu = await menuDb.getMenu(req.params.id);
+  if (!menu) return res.status(404).send(errorsSrv._404("menu"));
+  return res.send(menu);
+};

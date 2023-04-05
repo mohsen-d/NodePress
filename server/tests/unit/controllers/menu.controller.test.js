@@ -154,3 +154,28 @@ describe("updateMenu", () => {
     });
   });
 });
+
+describe("getMenu", () => {
+  mockDbMethod("getMenu");
+
+  req.params = { id: 1 };
+
+  it("should pass id to database layer", async () => {
+    await menuController.getMenu(req, res);
+    expect(menuDb.getMenu).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no menu", async () => {
+    const result = await menuController.getMenu(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the menu if found", async () => {
+    menuDb.getMenu.mockReturnValue(menu);
+
+    const result = await menuController.getMenu(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(menu);
+  });
+});
