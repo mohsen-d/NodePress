@@ -446,18 +446,15 @@ describe("getMenu", () => {
     await Menu.deleteMany({});
   });
 
-  describe("filters", () => {
-    it("should return null if no menu matches filters", async () => {
-      const filters = { title: "tttt" };
-      const menu = await menuDb.getMenu(filters);
-      expect(menu).toBeNull();
-    });
+  it("should return null if no menu matches the given id", async () => {
+    const menu = await menuDb.getMenu(
+      new mongoose.Types.ObjectId().toHexString()
+    );
+    expect(menu).toBeNull();
+  });
 
-    it("should return only one menu which meets all filters", async () => {
-      const filters = { title: "t1" };
-      const menu = await menuDb.getMenu(filters);
-      expect(menu).not.toBeNull();
-      expect(Array.isArray(menu)).toBe(false);
-    });
+  it("should return the menu with the given id", async () => {
+    const menu = await menuDb.getMenu(_id);
+    expect(menu).not.toBeNull();
   });
 });

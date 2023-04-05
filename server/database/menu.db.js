@@ -67,8 +67,7 @@ module.exports.getMenuAndAncestors = async function (id) {
   return list;
 };
 
-module.exports.getMenu = async function (parameters) {
-  const filters = menuSrv.buildGetFilter(parameters);
-  const menu = await Menu.findOne(filters);
+module.exports.getMenu = async function (id) {
+  const menu = await Menu.findById(id);
   return menu;
 };
