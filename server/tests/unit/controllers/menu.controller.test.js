@@ -108,3 +108,46 @@ describe("deleteMenus", () => {
     expect(result.body).toBe(3);
   });
 });
+
+describe("updateMenu", () => {
+  mockDbMethod("updateMenu");
+
+  beforeEach(() => {
+    req.params = { id: 1 };
+    req.body = { ...menu };
+  });
+
+  it("should return 400 error if data is invalid", async () => {
+    req.body.title = undefined;
+    const result = await menuController.updateMenu(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should pass valid menu to database layer to be updated", async () => {
+    const result = await menuController.updateMenu(req, res);
+    expect(menuDb.updateMenu).toHaveBeenCalled();
+  });
+
+  it("should return 404 error if menu not found", async () => {
+    menuDb.updateMenu.mockReturnValue(undefined);
+    const result = await menuController.updateMenu(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the updated menu", async () => {
+    menuDb.updateMenu.mockReturnValue(menu);
+    const result = await menuController.updateMenu(req, res);
+    expect(result.body).toEqual(menu);
+  });
+
+  it("should ignore parentId & ancestors fields if they're set and sent", async () => {
+    menu.parentId = [new mongoose.Types.ObjectId().toHexString()];
+    menu.ancestors = [new mongoose.Types.ObjectId().toHexString()];
+
+    await menuController.addMenu(req, res);
+    expect(menuDb.updateMenu).toHaveBeenCalledWith(1, {
+      title: "title",
+      url: "url",
+    });
+  });
+});

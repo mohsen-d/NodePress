@@ -31,3 +31,20 @@ module.exports.deleteMenus = async function (req, res) {
   const result = await menuDb.deleteMenus(req.body.ids);
   return res.send(result);
 };
+
+module.exports.updateMenu = async function (req, res) {
+  let menu = new Menu(req.body);
+
+  const { errors, isValid } = Menu.validate(menu);
+
+  if (!isValid) return res.status(400).send(errors);
+
+  menu = await menuDb.updateMenu(req.params.id, {
+    title: req.body.title,
+    url: req.body.url,
+  });
+
+  if (!menu) return res.status(404).send(errorsSrv._404("menu"));
+
+  return res.send(menu);
+};
