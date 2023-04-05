@@ -179,3 +179,20 @@ describe("getMenu", () => {
     expect(result.body).toEqual(menu);
   });
 });
+
+describe("getMenus", () => {
+  mockDbMethod("getMenus");
+
+  req.body = { _id: 1 };
+
+  it("should get menu from database layer", async () => {
+    await menuController.getMenus(req, res);
+    expect(menuDb.getMenus).toHaveBeenCalledWith(req.body);
+  });
+
+  it("should return found menu to client", async () => {
+    menuDb.getMenus.mockReturnValue([menu]);
+    const result = await menuController.getMenus(req, res);
+    expect(result.body).toEqual(expect.arrayContaining([menu]));
+  });
+});
