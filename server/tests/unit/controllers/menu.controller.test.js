@@ -59,9 +59,12 @@ describe("addMenu", () => {
 
   it("should ignore ancestors field if it's set and sent", async () => {
     menu.ancestors = [new mongoose.Types.ObjectId().toHexString()];
-    menuDb.addMenu.mockReturnValue(menu);
-    const result = await menuController.addMenu(req, res);
-    expect(result.ancestors).toBeUndefined();
+
+    await menuController.addMenu(req, res);
+    expect(
+      menuDb.addMenu.mock.calls[menuDb.addMenu.mock.calls.length - 1][0]
+        .ancestors.length
+    ).toBe(0);
   });
 });
 
