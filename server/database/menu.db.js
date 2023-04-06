@@ -63,7 +63,6 @@ module.exports.getMenuAndAncestors = async function (id) {
       list.push(...ancestors);
     }
   }
-  console.log(list);
   return list;
 };
 

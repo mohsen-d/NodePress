@@ -196,3 +196,29 @@ describe("getMenus", () => {
     expect(result.body).toEqual(expect.arrayContaining([menu]));
   });
 });
+
+describe("getMenuAndDescendants", () => {
+  mockDbMethod("getMenuAndDescendants");
+  menuDb.getMenuAndDescendants.mockReturnValue([]);
+
+  req.params = { id: 1 };
+
+  it("should pass id to database layer", async () => {
+    await menuController.getMenuAndDescendants(req, res);
+    expect(menuDb.getMenuAndDescendants).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no menu", async () => {
+    const result = await menuController.getMenuAndDescendants(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the menu and its descendants if found", async () => {
+    menuDb.getMenuAndDescendants.mockReturnValue([menu]);
+
+    const result = await menuController.getMenuAndDescendants(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body[0]).toEqual(menu);
+  });
+});

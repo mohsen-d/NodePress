@@ -59,3 +59,9 @@ module.exports.getMenus = async function (req, res) {
   const list = await menuDb.getMenus(req.body);
   return res.send(list);
 };
+
+module.exports.getMenuAndDescendants = async function (req, res) {
+  const list = await menuDb.getMenuAndDescendants(req.params.id);
+  if (list.length == 0) return res.status(404).send(errorsSrv._404("menu"));
+  return res.send(list);
+};
