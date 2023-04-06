@@ -222,3 +222,29 @@ describe("getMenuAndDescendants", () => {
     expect(result.body[0]).toEqual(menu);
   });
 });
+
+describe("getMenuAndAncestors", () => {
+  mockDbMethod("getMenuAndAncestors");
+  menuDb.getMenuAndAncestors.mockReturnValue([]);
+
+  req.params = { id: 1 };
+
+  it("should pass id to database layer", async () => {
+    await menuController.getMenuAndAncestors(req, res);
+    expect(menuDb.getMenuAndAncestors).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no menu", async () => {
+    const result = await menuController.getMenuAndAncestors(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the menu and its descendants if found", async () => {
+    menuDb.getMenuAndAncestors.mockReturnValue([menu]);
+
+    const result = await menuController.getMenuAndAncestors(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body[0]).toEqual(menu);
+  });
+});
