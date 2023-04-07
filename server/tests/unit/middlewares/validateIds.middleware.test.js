@@ -49,7 +49,7 @@ it("should ignore delete() routes without req.params.id and req.body.ids", () =>
   expect(status).toBe(200);
 });
 
-it("should ignore put() routes without req.params.id and req.body.ids", () => {
+it("should ignore put() routes without req.params.id, req.body.ids and req.body.parentId", () => {
   req.method = "put";
   middleware(req, res, next);
   expect(status).toBe(200);
@@ -67,6 +67,12 @@ it("should return with 400 error if req.body.ids are invalid", () => {
   expect(result.status).toBe(400);
 });
 
+it("should return with 400 error if req.body.parentId is invalid", () => {
+  req.body.parentId = "1";
+  const result = middleware(req, res, next);
+  expect(result.status).toBe(400);
+});
+
 it("should pass with a valid req.params.id", () => {
   req.params.id = new mongoose.Types.ObjectId().toHexString();
   middleware(req, res, next);
@@ -78,6 +84,13 @@ it("should pass with a valid req.body.ids", () => {
     new mongoose.Types.ObjectId().toHexString(),
     new mongoose.Types.ObjectId().toHexString(),
   ];
+
+  middleware(req, res, next);
+  expect(status).toBe(200);
+});
+
+it("should pass with a valid req.body.parentId", () => {
+  req.body.parentId = new mongoose.Types.ObjectId().toHexString();
 
   middleware(req, res, next);
   expect(status).toBe(200);
