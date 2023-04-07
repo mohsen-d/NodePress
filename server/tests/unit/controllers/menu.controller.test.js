@@ -248,3 +248,24 @@ describe("getMenuAndAncestors", () => {
     expect(result.body[0]).toEqual(menu);
   });
 });
+
+describe("updateMenuParent", () => {
+  mockDbMethod("updateMenuParent");
+
+  beforeEach(() => {
+    req.params = { id: 1 };
+    req.body = { parentId: 2 };
+  });
+
+  it("should return 404 error if menu not found", async () => {
+    menuDb.updateMenuParent.mockReturnValue(undefined);
+    const result = await menuController.updateMenuParent(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the updated menu", async () => {
+    menuDb.updateMenuParent.mockReturnValue(menu);
+    const result = await menuController.updateMenuParent(req, res);
+    expect(result.body).toEqual(menu);
+  });
+});

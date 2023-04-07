@@ -71,3 +71,11 @@ module.exports.getMenuAndAncestors = async function (req, res) {
   if (list.length == 0) return res.status(404).send(errorsSrv._404("menu"));
   return res.send(list);
 };
+
+module.exports.updateMenuParent = async function (req, res) {
+  const menu = await menuDb.updateMenuParent(req.params.id, req.body.parentId);
+
+  if (!menu) return res.status(404).send(errorsSrv._404("menu"));
+
+  return res.send(menu);
+};
