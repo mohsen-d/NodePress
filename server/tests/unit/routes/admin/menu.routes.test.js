@@ -21,6 +21,10 @@ describe("admin routes", () => {
     );
     expect(router.post).toHaveBeenCalledWith("/", menuCtrl.addMenu);
     expect(router.put).toHaveBeenCalledWith("/:id", menuCtrl.updateMenu);
+    expect(router.put).toHaveBeenCalledWith(
+      "/:id/parent",
+      menuCtrl.updateMenuParent
+    );
     expect(router.delete).toHaveBeenCalledWith("/", menuCtrl.deleteMenus);
     expect(router.delete).toHaveBeenCalledWith("/:id", menuCtrl.deleteMenu);
   });
