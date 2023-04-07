@@ -7,6 +7,8 @@ module.exports = function (req, res, next) {
       return res.status(400).send(errorsSrv._400("id"));
     if (req.body.ids && !areValid(req.body.ids))
       return res.status(400).send(errorsSrv._400("ids"));
+    if (req.body.parentId && !areValid([req.body.parentId]))
+      return res.status(400).send(errorsSrv._400("parentId"));
   }
   next();
 };
@@ -19,7 +21,7 @@ const shallIntercept = (req) => {
   const methodsToIntercept = ["get", "delete", "put"];
 
   if (!methodsToIntercept.includes(req.method)) return false;
-  if (!req.params.id && !req.body.ids) return false;
+  if (!req.params.id && !req.body.ids && !req.body.parentId) return false;
 
   return true;
 };
