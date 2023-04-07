@@ -70,3 +70,37 @@ module.exports.getMenu = async function (id) {
   const menu = await Menu.findById(id);
   return menu;
 };
+
+module.exports.updateMenuParent = async function (id, newParentId) {
+  let menu = await Menu.findOne({ _id: id });
+  if (!menu) return undefined;
+
+  let newParent = {};
+  let newAncestors = [];
+  const oldAncestors = menu.ancestors;
+
+  if (newParentId) {
+    newParent = await Menu.findById({ _id: newParentId });
+    if (!newParent) return undefined;
+
+    newAncestors = newParent.ancestors.concat([newParent._id]);
+  }
+
+  let updateCommand = newParentId
+    ? { parentId: newParent._id, ancestors: newAncestors }
+    : { $unset: { parentId: 1 }, ancestors: newAncestors };
+
+  menu = await Menu.findByIdAndUpdate(menu._id, updateCommand, {
+    returnDocument: "after",
+  });
+
+  updateCommand = { $pull: { ancestors: { $in: oldAncestors } } };
+  await Menu.updateMany({ ancestors: menu._id }, updateCommand);
+
+  updateCommand = {
+    $push: { ancestors: { $each: newAncestors, $position: 0 } },
+  };
+  await Menu.updateMany({ ancestors: menu._id }, updateCommand);
+
+  return menu;
+};

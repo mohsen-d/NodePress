@@ -1,7 +1,8 @@
-const menuDb = require("../../../database/menu.db");
-const Menu = require("../../../models/menu.model");
 const mongoose = require("mongoose");
 require("../../../startup/db")();
+
+const menuDb = require("../../../database/menu.db");
+const Menu = require("../../../models/menu.model");
 
 afterAll(() => {
   mongoose.disconnect();
@@ -456,5 +457,110 @@ describe("getMenu", () => {
   it("should return the menu with the given id", async () => {
     const menu = await menuDb.getMenu(_id);
     expect(menu).not.toBeNull();
+  });
+});
+
+describe("updateMenuParent", () => {
+  const _id = new mongoose.Types.ObjectId().toHexString();
+  const _parentId = new mongoose.Types.ObjectId().toHexString();
+  const _childId = new mongoose.Types.ObjectId().toHexString();
+  const _anotherChildId = new mongoose.Types.ObjectId().toHexString();
+  const _grandChildId = new mongoose.Types.ObjectId().toHexString();
+
+  beforeEach(async () => {
+    await Menu.deleteMany({});
+    await Menu.insertMany([
+      {
+        _id: _id,
+        title: "parent of another child",
+      },
+      {
+        _id: _anotherChildId,
+        parentId: _id,
+        ancestors: [_id],
+        title: "another child",
+      },
+      {
+        _id: _parentId,
+        title: "parent of child",
+      },
+      {
+        _id: _childId,
+        parentId: _parentId,
+        ancestors: [_parentId],
+        title: "child",
+      },
+      {
+        _id: _grandChildId,
+        parentId: _childId,
+        ancestors: [_parentId, _childId],
+        title: "grand child",
+      },
+    ]);
+  });
+
+  afterAll(async () => {
+    //await Menu.deleteMany({});
+  });
+
+  it("should return undefined if can't find menu with given id", async () => {
+    const result = await menuDb.updateMenuParent(
+      new mongoose.Types.ObjectId().toHexString(),
+      _id
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("should return undefined if can't find menu with given parentId", async () => {
+    const result = await menuDb.updateMenuParent(
+      _anotherChildId,
+      new mongoose.Types.ObjectId().toHexString()
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("should change parentId of menu with given id", async () => {
+    const result = await menuDb.updateMenuParent(_anotherChildId, _parentId);
+
+    expect(result).not.toBeUndefined();
+    expect(result._id.toHexString()).toBe(_anotherChildId);
+    expect(result.parentId.toHexString()).toBe(_parentId);
+  });
+
+  it("should change ancestors of menu with given id", async () => {
+    const result = await menuDb.updateMenuParent(
+      _grandChildId,
+      _anotherChildId
+    );
+
+    expect(result).not.toBeUndefined();
+    expect(result.ancestors.length).toBe(2);
+    expect(result.ancestors[0].toHexString()).toBe(_id);
+    expect(result.ancestors[1].toHexString()).toBe(_anotherChildId);
+  });
+
+  it("should change ancestors of menu children", async () => {
+    await menuDb.updateMenuParent(_childId, _anotherChildId);
+
+    const grandChild = await Menu.findById(_grandChildId);
+
+    expect(grandChild.ancestors.length).toBe(3);
+    expect(grandChild.ancestors[0].toHexString()).toBe(_id);
+    expect(grandChild.ancestors[1].toHexString()).toBe(_anotherChildId);
+    expect(grandChild.ancestors[2].toHexString()).toBe(_childId);
+  });
+
+  it("should set parentId as undefined", async () => {
+    const result = await menuDb.updateMenuParent(_childId);
+
+    expect(result.parentId).toBeUndefined();
+  });
+
+  it("should set ancestors to []", async () => {
+    const result = await menuDb.updateMenuParent(_childId);
+
+    expect(result.ancestors.length).toBe(0);
   });
 });
