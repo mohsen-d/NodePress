@@ -20,7 +20,7 @@ module.exports = function (req, res, next) {
   }
 
   if (needsAdminUser && req.user.role !== "admin")
-    return res.status(403).send("access denied");
+    return res.status(403).send(errorsSrv._403());
 
   next();
 };
