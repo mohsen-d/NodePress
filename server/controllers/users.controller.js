@@ -1,0 +1,11 @@
+module.exports.addUser = async function (req, res) {};
+module.exports.getUsers = async function (req, res) {};
+module.exports.getUser = async function (req, res) {};
+module.exports.getCurrentUser = async function (req, res) {};
+module.exports.updateUsers = async function (req, res) {};
+module.exports.updateUser = async function (req, res) {};
+module.exports.changeCurrentUserPassword = async function (req, res) {};
+module.exports.changeCurrentUserName = async function (req, res) {};
+module.exports.deleteUsers = async function (req, res) {};
+module.exports.deleteUser = async function (req, res) {};
+module.exports.deleteCurrentUser = async function (req, res) {};
