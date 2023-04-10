@@ -4,6 +4,7 @@ const router = {
   get: jest.fn(),
   put: jest.fn(),
   delete: jest.fn(),
+  post: jest.fn(),
 };
 
 express.Router = jest.fn().mockReturnValue(router);
@@ -22,4 +23,6 @@ it("should map each route to its corresponding controller method", () => {
     usersCtrl.changeCurrentUserName
   );
   expect(router.delete).toHaveBeenCalledWith("/", usersCtrl.deleteCurrentUser);
+  expect(router.post).toHaveBeenCalledWith("/signin", usersCtrl.signIn);
+  expect(router.post).toHaveBeenCalledWith("/signup", usersCtrl.signUp);
 });

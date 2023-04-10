@@ -9,3 +9,5 @@ module.exports.changeCurrentUserName = async function (req, res) {};
 module.exports.deleteUsers = async function (req, res) {};
 module.exports.deleteUser = async function (req, res) {};
 module.exports.deleteCurrentUser = async function (req, res) {};
+module.exports.signIn = async function (req, res) {};
+module.exports.signUp = async function (req, res) {};
