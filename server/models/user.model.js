@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const nameRegex = /^[a-z\s\'\-]+$/i;
 const emailRegex =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i;
+const passwordRegex =
+  /^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[A-Z])[a-zA-Z0-9!@#$%^&*]{8,16}$/;
 
 const roles = ["admin", "user"];
 const sources = ["local", "google", "outlook"];
@@ -30,7 +32,7 @@ const schema = new mongoose.Schema({
     match: emailRegex,
     unique: true,
   }),
-  password: stringOptions({ maxLength: 1024 }),
+  password: stringOptions({ lowercase: false, maxLength: 1024 }),
   logins: {
     type: [
       new mongoose.Schema({
@@ -43,7 +45,10 @@ const schema = new mongoose.Schema({
   isActive: { type: Boolean, default: false },
   isConfirmed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
-  source: stringOptions({ enum: sources, default: sources[0] }),
+  source: stringOptions({
+    enum: sources,
+    default: sources[0],
+  }),
 });
 
 schema.methods.generateAuthToken = function () {
@@ -55,8 +60,23 @@ schema.methods.generateAuthToken = function () {
 };
 
 schema.statics.validate = function (instance) {
-  const result = instance.validateSync();
-  const isValid = result === undefined;
+  let result = instance.validateSync();
+  let isValid = result === undefined;
+
+  if (isValid && !passwordRegex.test(instance.password)) {
+    isValid = false;
+    result = {
+      errors: {
+        password: {
+          kind: "regex",
+          path: "password",
+          value: instance.password,
+          message: "invalid password",
+        },
+      },
+    };
+  }
+
   return {
     errors: isValid ? undefined : result.errors,
     isValid,

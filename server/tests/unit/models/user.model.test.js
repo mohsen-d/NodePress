@@ -8,7 +8,7 @@ describe("validate", () => {
     user = new User({
       name: "firstName lastName",
       email: "foo@bar.com",
-      password: "123",
+      password: "123456@Aa",
       role: "user",
       isActive: true,
       isConfirmed: true,
@@ -144,6 +144,46 @@ describe("validate", () => {
 
     it("should consider spaces-only string as password as invalid", () => {
       user.password = "    ";
+      const result = User.validate(user);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors["password"]).toBeDefined();
+    });
+
+    it("should contain at least a capital letter", () => {
+      user.password = "123456@a";
+      const result = User.validate(user);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors["password"]).toBeDefined();
+    });
+
+    it("should contain at least a number", () => {
+      user.password = "Aaaaaaa@";
+      const result = User.validate(user);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors["password"]).toBeDefined();
+    });
+
+    it("should contain at least a special character", () => {
+      user.password = "Aa123456";
+      const result = User.validate(user);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors["password"]).toBeDefined();
+    });
+
+    it("should be at least 8 characters long", () => {
+      user.password = "A#12345";
+      const result = User.validate(user);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors["password"]).toBeDefined();
+    });
+
+    it("should be at most 16 characters long", () => {
+      user.password = "A#12345678910111213";
       const result = User.validate(user);
 
       expect(result.isValid).toBe(false);
