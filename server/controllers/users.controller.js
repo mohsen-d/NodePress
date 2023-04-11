@@ -1,4 +1,23 @@
-module.exports.addUser = async function (req, res) {};
+const User = require("../models/user.model");
+const usersDb = require("../database/users.db");
+const errorsSrv = require("../services/errors.services");
+const usersSrv = require("../services/users.services");
+
+module.exports.addUser = async function (req, res) {
+  const newUser = new User(req.body);
+
+  const { isValid, errors } = User.validate(newUser);
+  if (!isValid) return res.status(400).send(errors);
+
+  const emailExists = await usersDb.emailExists(newUser.email);
+  if (emailExists) return res.status(400).send(errorsSrv._400("email"));
+
+  newUser.password = await usersSrv.hashPassword(newUser.password);
+
+  await usersDb.addUser(newUser);
+
+  return res.send(usersSrv.excludePassword(newUser));
+};
 module.exports.getUsers = async function (req, res) {};
 module.exports.getUser = async function (req, res) {};
 module.exports.getCurrentUser = async function (req, res) {};
