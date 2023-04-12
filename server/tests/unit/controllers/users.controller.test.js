@@ -106,9 +106,22 @@ describe("getUsers", () => {
 describe("getUser", () => {
   mockDbMethod("getUser");
 
+  req.baseUrl = "/admin";
   req.params = { id: 1 };
 
   it("should pass id to database layer", async () => {
+    await users.getUser(req, res);
+    expect(usersDb.getUser).toHaveBeenCalled();
+  });
+
+  it("should get id from req.user.id", async () => {
+    req.baseUrl = "/user";
+    req.user = { id: 2 };
+    await users.getUser(req, res);
+    expect(usersDb.getUser).toHaveBeenCalledWith(req.user.id);
+  });
+
+  it("should get id from req.params.id", async () => {
     await users.getUser(req, res);
     expect(usersDb.getUser).toHaveBeenCalledWith(req.params.id);
   });

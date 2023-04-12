@@ -25,12 +25,12 @@ module.exports.getUsers = async function (req, res) {
 };
 
 module.exports.getUser = async function (req, res) {
-  const user = await usersDb.getUser(req.params.id);
+  const userId = req.baseUrl == "/admin" ? req.params.id : req.user.id;
+  const user = await usersDb.getUser(userId);
   if (!user) return res.status(404).send(errorsSrv._404("user"));
   return res.send(usersSrv.excludePassword(user));
 };
 
-module.exports.getCurrentUser = async function (req, res) {};
 module.exports.updateUsers = async function (req, res) {};
 module.exports.updateUser = async function (req, res) {};
 module.exports.changeCurrentUserPassword = async function (req, res) {};
