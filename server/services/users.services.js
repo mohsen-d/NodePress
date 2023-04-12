@@ -17,6 +17,7 @@ module.exports.excludePassword = function (user) {
 };
 
 module.exports.hashPassword = async function (password) {
+  if (typeof password !== "string") return "";
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };

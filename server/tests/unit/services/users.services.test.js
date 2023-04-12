@@ -53,6 +53,13 @@ describe("hashPassword", () => {
     expect(hashedPassword).not.toEqual(password);
     expect(hashedPassword.length).toBe(60);
   });
+
+  it("should return empty string for non-string inputs", async () => {
+    expect(await usersSrv.hashPassword(0)).toBe("");
+    expect(await usersSrv.hashPassword(undefined)).toBe("");
+    expect(await usersSrv.hashPassword(null)).toBe("");
+    expect(await usersSrv.hashPassword(true)).toBe("");
+  });
 });
 
 describe("buildUpdateCommand", () => {
