@@ -3,10 +3,10 @@ const config = require("config");
 const errorsSrv = require("../services/errors.services");
 
 module.exports = function (req, res, next) {
-  const path = req.route.path;
+  const baseUrl = req.baseUrl;
 
-  const needsLoggedInUser = path.startsWith("/user/");
-  const needsAdminUser = path.startsWith("/admin/");
+  const needsLoggedInUser = baseUrl.startsWith("/user");
+  const needsAdminUser = baseUrl.startsWith("/admin");
 
   if (!needsLoggedInUser && !needsAdminUser) next();
 

@@ -30,12 +30,12 @@ const res = {
 
 beforeEach(() => {
   status = undefined;
-  req = { route: { path: "/" }, header: () => {} };
+  req = { baseUrl: "/", header: () => {} };
 });
 
 describe("public routes", () => {
   it("should ignore and pass", () => {
-    req.route.path = "/posts";
+    req.baseUrl = "/";
     middleware(req, res, next);
     expect(status).toBe(200);
   });
@@ -43,14 +43,14 @@ describe("public routes", () => {
 
 describe("admin routes", () => {
   it("should return with 401 error if no token is provided", () => {
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
 
     const result = middleware(req, res, next);
     expect(result.status).toBe(401);
   });
 
   it("should return with 400 error if token is invalid", () => {
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
     req.header = () => "invalid token";
 
     const result = middleware(req, res, next);
@@ -62,7 +62,7 @@ describe("admin routes", () => {
       { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
     req.header = () => token;
 
     const result = middleware(req, res, next);
@@ -74,7 +74,7 @@ describe("admin routes", () => {
       { role: "admin", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
     req.header = () => token;
 
     middleware(req, res, next);
@@ -86,7 +86,7 @@ describe("admin routes", () => {
       { role: "admin", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
     req.header = () => token;
 
     middleware(req, res, next);
@@ -98,14 +98,14 @@ describe("admin routes", () => {
 
 describe("user routes", () => {
   it("should return with 401 error if no token is provided", () => {
-    req.route.path = "/user/profile";
+    req.baseUrl = "/user";
 
     const result = middleware(req, res, next);
     expect(result.status).toBe(401);
   });
 
   it("should return with 400 error if token is invalid", () => {
-    req.route.path = "/user/profile";
+    req.baseUrl = "/user";
     req.header = () => "invalid token";
 
     const result = middleware(req, res, next);
@@ -117,7 +117,7 @@ describe("user routes", () => {
       { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/user/profile";
+    req.baseUrl = "/user";
     req.header = () => token;
 
     middleware(req, res, next);
@@ -129,7 +129,7 @@ describe("user routes", () => {
       { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/user/profile";
+    req.baseUrl = "/user";
     req.header = () => token;
 
     middleware(req, res, next);
