@@ -33,6 +33,12 @@ module.exports.buildUpdateCommand = function (fields) {
 };
 
 module.exports.filterUpdateFields = function (fields) {
-  const { name, password, isActive, isConfirmed, role, ...invalid } = fields;
-  return { name, password, isActive, isConfirmed, role };
+  const validFields = ["name", "password", "isActive", "isConfirmed", "role"];
+  const output = {};
+
+  Object.keys(fields).forEach((f) => {
+    if (validFields.includes(f)) output[f] = fields[f];
+  });
+
+  return output;
 };

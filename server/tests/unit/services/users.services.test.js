@@ -103,4 +103,22 @@ describe("filterUpdateFields", () => {
     expect(result).toHaveProperty("isActive");
     expect(result).toHaveProperty("isConfirmed");
   });
+
+  it("should not return an allowed field if it is not included in the input", () => {
+    const fields = {
+      email: "w@e.r",
+      password: "123",
+      isActive: true,
+      _id: 1,
+    };
+
+    const result = usersSrv.filterUpdateFields(fields);
+
+    expect(result).not.toHaveProperty("email");
+    expect(result).not.toHaveProperty("_id");
+    expect(result).not.toHaveProperty("name");
+    expect(result).toHaveProperty("password");
+    expect(result).toHaveProperty("isActive");
+    expect(result).not.toHaveProperty("isConfirmed");
+  });
 });
