@@ -249,3 +249,28 @@ describe("deleteUsers", () => {
     expect(result.body).toBe(3);
   });
 });
+
+describe("deleteUser", () => {
+  mockDbMethod("deleteUser");
+
+  req.params = { id: 1 };
+
+  it("should pass id to database layer", async () => {
+    await users.deleteUser(req, res);
+    expect(usersDb.deleteUser).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no user", async () => {
+    const result = await users.deleteUser(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the deleted user", async () => {
+    usersDb.deleteUser.mockReturnValue(user);
+
+    const result = await users.deleteUser(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(user);
+  });
+});

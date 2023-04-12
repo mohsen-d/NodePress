@@ -62,7 +62,14 @@ module.exports.deleteUsers = async function (req, res) {
   return res.send(result);
 };
 
-module.exports.deleteUser = async function (req, res) {};
+module.exports.deleteUser = async function (req, res) {
+  const user = await usersDb.deleteUser(req.params.id);
+
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  return res.send(user);
+};
+
 module.exports.deleteCurrentUser = async function (req, res) {};
 module.exports.signIn = async function (req, res) {};
 module.exports.signUp = async function (req, res) {};
