@@ -54,3 +54,31 @@ describe("hashPassword", () => {
     expect(hashedPassword.length).toBe(60);
   });
 });
+
+describe("buildUpdateCommand", () => {
+  it("should only pick isActive and isConfirmed fields", () => {
+    const result = usersSrv.buildUpdateCommand({
+      a: 1,
+      b: 2,
+      isActive: true,
+      isConfirmed: false,
+    });
+    expect(result).toHaveProperty("isActive", true);
+    expect(result).toHaveProperty("isConfirmed", false);
+    expect(result).not.toHaveProperty("a");
+    expect(result).not.toHaveProperty("b");
+  });
+
+  it("should ignore invalid isActive and isConfirmed fields", () => {
+    const result = usersSrv.buildUpdateCommand({
+      a: 1,
+      b: 2,
+      isActive: "a",
+      isConfirmed: false,
+    });
+    expect(result).toHaveProperty("isConfirmed", false);
+    expect(result).not.toHaveProperty("isActive");
+    expect(result).not.toHaveProperty("a");
+    expect(result).not.toHaveProperty("b");
+  });
+});

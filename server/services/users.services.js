@@ -20,3 +20,14 @@ module.exports.hashPassword = async function (password) {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
+
+module.exports.buildUpdateCommand = function (fields) {
+  const updateCommand = {};
+  if (typeof fields.isActive === "boolean")
+    updateCommand.isActive = fields.isActive;
+
+  if (typeof fields.isConfirmed === "boolean")
+    updateCommand.isConfirmed = fields.isConfirmed;
+
+  return updateCommand;
+};
