@@ -84,3 +84,18 @@ describe("addUser", () => {
     expect(hashPasswordFn).toHaveBeenCalledWith(user.password);
   });
 });
+
+describe("getUsers", () => {
+  mockDbMethod("getUsers");
+
+  it("should get users from database layer", async () => {
+    await users.getUsers(req, res);
+    expect(usersDb.getUsers).toHaveBeenCalled();
+  });
+
+  it("should return found users to client", async () => {
+    usersDb.getUsers.mockReturnValue([user]);
+    const result = await users.getUsers(req, res);
+    expect(result.body).toEqual(expect.arrayContaining([user]));
+  });
+});

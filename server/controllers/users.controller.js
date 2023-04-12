@@ -18,7 +18,12 @@ module.exports.addUser = async function (req, res) {
 
   return res.send(usersSrv.excludePassword(newUser));
 };
-module.exports.getUsers = async function (req, res) {};
+
+module.exports.getUsers = async function (req, res) {
+  const list = await usersDb.getUsers(req.body);
+  return res.send(list);
+};
+
 module.exports.getUser = async function (req, res) {};
 module.exports.getCurrentUser = async function (req, res) {};
 module.exports.updateUsers = async function (req, res) {};
