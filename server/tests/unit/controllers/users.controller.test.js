@@ -232,3 +232,20 @@ describe("updateUser", () => {
     expect(result.body).not.toHaveProperty("password");
   });
 });
+
+describe("deleteUsers", () => {
+  mockDbMethod("deleteUsers");
+
+  req.body = { ids: [1, 2, 3] };
+
+  it("should pass ids to database layer", async () => {
+    await users.deleteUsers(req, res);
+    expect(usersDb.deleteUsers).toHaveBeenCalledWith(req.body.ids);
+  });
+
+  it("should return the number of deleted documents", async () => {
+    usersDb.deleteUsers.mockReturnValue(3);
+    const result = await users.deleteUsers(req, res);
+    expect(result.body).toBe(3);
+  });
+});

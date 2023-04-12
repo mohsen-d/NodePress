@@ -56,7 +56,12 @@ module.exports.updateUser = async function (req, res) {
 
 module.exports.changeCurrentUserPassword = async function (req, res) {};
 module.exports.changeCurrentUserName = async function (req, res) {};
-module.exports.deleteUsers = async function (req, res) {};
+
+module.exports.deleteUsers = async function (req, res) {
+  const result = await usersDb.deleteUsers(req.body.ids);
+  return res.send(result);
+};
+
 module.exports.deleteUser = async function (req, res) {};
 module.exports.deleteCurrentUser = async function (req, res) {};
 module.exports.signIn = async function (req, res) {};
