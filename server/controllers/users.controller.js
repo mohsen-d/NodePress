@@ -21,10 +21,15 @@ module.exports.addUser = async function (req, res) {
 
 module.exports.getUsers = async function (req, res) {
   const list = await usersDb.getUsers(req.body);
-  return res.send(list);
+  return res.send(usersSrv.excludePasswords(list));
 };
 
-module.exports.getUser = async function (req, res) {};
+module.exports.getUser = async function (req, res) {
+  const user = await usersDb.getUser(req.params.id);
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+  return res.send(usersSrv.excludePassword(user));
+};
+
 module.exports.getCurrentUser = async function (req, res) {};
 module.exports.updateUsers = async function (req, res) {};
 module.exports.updateUser = async function (req, res) {};

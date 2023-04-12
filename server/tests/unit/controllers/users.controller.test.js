@@ -1,6 +1,7 @@
 const users = require("../../../controllers/users.controller");
 const usersDb = require("../../../database/users.db");
 const usersSrv = require("../../../services/users.services");
+const User = require("../../../models/user.model");
 
 const req = { user: { isAuthenticated: true } };
 
@@ -89,13 +90,50 @@ describe("getUsers", () => {
   mockDbMethod("getUsers");
 
   it("should get users from database layer", async () => {
+    usersDb.getUsers.mockReturnValue([new User({ ...user })]);
     await users.getUsers(req, res);
     expect(usersDb.getUsers).toHaveBeenCalled();
   });
 
   it("should return found users to client", async () => {
-    usersDb.getUsers.mockReturnValue([user]);
+    usersDb.getUsers.mockReturnValue([new User({ ...user })]);
     const result = await users.getUsers(req, res);
-    expect(result.body).toEqual(expect.arrayContaining([user]));
+    expect(result.body[0]).toHaveProperty("name", user.name);
+    expect(result.body[0]).toHaveProperty("email", user.email);
+  });
+});
+
+describe("getUser", () => {
+  mockDbMethod("getUser");
+
+  req.params = { id: 1 };
+
+  it("should pass id to database layer", async () => {
+    await users.getUser(req, res);
+    expect(usersDb.getUser).toHaveBeenCalledWith(req.params.id);
+  });
+
+  it("should return 404 error if id matches no user", async () => {
+    const result = await users.getUser(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return the user if found", async () => {
+    usersDb.getUser.mockReturnValue(new User({ ...user }));
+
+    const result = await users.getUser(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toHaveProperty("name", user.name);
+    expect(result.body).toHaveProperty("email", user.email);
+  });
+
+  it("should not return the user's password", async () => {
+    usersDb.getUser.mockReturnValue(new User({ ...user }));
+
+    const result = await users.getUser(req, res);
+
+    expect(result.status).toBe(200);
+    expect(result.body).not.toHaveProperty("password");
   });
 });
