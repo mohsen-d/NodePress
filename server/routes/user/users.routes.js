@@ -2,7 +2,7 @@ const usersCtrl = require("../../controllers/users.controller");
 const express = require("express");
 const router = express.Router();
 
-router.get("/", usersCtrl.getCurrentUser);
+router.get("/", usersCtrl.getUser);
 router.put("/password", usersCtrl.changeCurrentUserPassword);
 router.put("/name", usersCtrl.changeCurrentUserName);
 router.delete("/", usersCtrl.deleteCurrentUser);

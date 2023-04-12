@@ -9,20 +9,25 @@ const router = {
 
 express.Router = jest.fn().mockReturnValue(router);
 
-const usersCtrl = require("../../../../controllers/users.controller");
+describe("user routes", () => {
+  const usersCtrl = require("../../../../controllers/users.controller");
 
-it("should map each route to its corresponding controller method", () => {
-  const usersRoute = require("../../../../routes/user/users.routes");
-  expect(router.get).toHaveBeenCalledWith("/", usersCtrl.getCurrentUser);
-  expect(router.put).toHaveBeenCalledWith(
-    "/password",
-    usersCtrl.changeCurrentUserPassword
-  );
-  expect(router.put).toHaveBeenCalledWith(
-    "/name",
-    usersCtrl.changeCurrentUserName
-  );
-  expect(router.delete).toHaveBeenCalledWith("/", usersCtrl.deleteCurrentUser);
-  expect(router.post).toHaveBeenCalledWith("/signin", usersCtrl.signIn);
-  expect(router.post).toHaveBeenCalledWith("/signup", usersCtrl.signUp);
+  it("should map each route to its corresponding controller method", () => {
+    const usersRoute = require("../../../../routes/user/users.routes");
+    expect(router.get).toHaveBeenCalledWith("/", usersCtrl.getUser);
+    expect(router.put).toHaveBeenCalledWith(
+      "/password",
+      usersCtrl.changeCurrentUserPassword
+    );
+    expect(router.put).toHaveBeenCalledWith(
+      "/name",
+      usersCtrl.changeCurrentUserName
+    );
+    expect(router.delete).toHaveBeenCalledWith(
+      "/",
+      usersCtrl.deleteCurrentUser
+    );
+    expect(router.post).toHaveBeenCalledWith("/signin", usersCtrl.signIn);
+    expect(router.post).toHaveBeenCalledWith("/signup", usersCtrl.signUp);
+  });
 });
