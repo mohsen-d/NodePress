@@ -28,7 +28,10 @@ const user = {
   name: "firstname familyname",
   email: "foo@bar.com",
   password: "123456#Q",
+  role: "user",
 };
+
+const userInstance = () => new User({ ...user });
 
 function mockDbMethod(method) {
   usersDb[method] = jest.fn();
@@ -90,13 +93,13 @@ describe("getUsers", () => {
   mockDbMethod("getUsers");
 
   it("should get users from database layer", async () => {
-    usersDb.getUsers.mockReturnValue([new User({ ...user })]);
+    usersDb.getUsers.mockReturnValue([userInstance()]);
     await users.getUsers(req, res);
     expect(usersDb.getUsers).toHaveBeenCalled();
   });
 
   it("should return found users to client", async () => {
-    usersDb.getUsers.mockReturnValue([new User({ ...user })]);
+    usersDb.getUsers.mockReturnValue([userInstance()]);
     const result = await users.getUsers(req, res);
     expect(result.body[0]).toHaveProperty("name", user.name);
     expect(result.body[0]).toHaveProperty("email", user.email);
@@ -132,7 +135,7 @@ describe("getUser", () => {
   });
 
   it("should return the user if found", async () => {
-    usersDb.getUser.mockReturnValue(new User({ ...user }));
+    usersDb.getUser.mockReturnValue(userInstance());
 
     const result = await users.getUser(req, res);
 
@@ -142,7 +145,7 @@ describe("getUser", () => {
   });
 
   it("should not return the user's password", async () => {
-    usersDb.getUser.mockReturnValue(new User({ ...user }));
+    usersDb.getUser.mockReturnValue(userInstance());
 
     const result = await users.getUser(req, res);
 
@@ -167,5 +170,65 @@ describe("updateUsers", () => {
     usersDb.updateUsers.mockReturnValue(5);
     const result = await users.updateUsers(req, res);
     expect(result.body).toBe(5);
+  });
+});
+
+describe("updateUser", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("updateUser");
+    mockDbMethod("getUser");
+  });
+
+  req.params = { id: 1 };
+
+  it("should return with 404 error if id matches no user", async () => {
+    usersDb.getUser.mockReturnValue(undefined);
+    const result = await users.updateUser(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return with 400 error if input is invalid", async () => {
+    req.body = { role: "invalid" };
+    usersDb.getUser.mockReturnValue(userInstance());
+    const result = await users.updateUser(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should call usersServices.hashPassword if password is changed", async () => {
+    hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
+    req.body = { password: "pAss@123" };
+    const returnValue = userInstance();
+    usersDb.getUser.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.updateUser(req, res);
+    expect(hashPasswordFn).toHaveBeenCalledWith(req.body.password);
+  });
+
+  it("should pass changed user to database", async () => {
+    req.body = { password: "pAss@123" };
+    const returnValue = userInstance();
+    usersDb.getUser.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.updateUser(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalled();
+  });
+
+  it("should return updated user", async () => {
+    req.body = { password: "pAss@123" };
+    const returnValue = userInstance();
+    usersDb.getUser.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    const result = await users.updateUser(req, res);
+    expect(returnValue).toEqual(expect.objectContaining(result.body));
+  });
+
+  it("should not return updated user's password", async () => {
+    req.body = { password: "pAss@123" };
+    const returnValue = userInstance();
+    usersDb.getUser.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    const result = await users.updateUser(req, res);
+    expect(result.body).not.toHaveProperty("password");
   });
 });

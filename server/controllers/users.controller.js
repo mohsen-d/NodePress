@@ -37,7 +37,23 @@ module.exports.updateUsers = async function (req, res) {
   return res.send(result);
 };
 
-module.exports.updateUser = async function (req, res) {};
+module.exports.updateUser = async function (req, res) {
+  const user = await usersDb.getUser(req.params.id);
+  if (!user) return res.status(404).send(errorsSrv._400("user"));
+
+  const fields = usersSrv.filterUpdateFields(req.body);
+
+  Object.assign(user, fields);
+
+  const { errors, isValid } = User.validate(user);
+  if (!isValid) return res.status(400).send(errors);
+
+  if (fields.password) user.password = usersSrv.hashPassword(user.password);
+
+  const updatedUser = await usersDb.updateUser(user);
+  return res.send(usersSrv.excludePassword(updatedUser));
+};
+
 module.exports.changeCurrentUserPassword = async function (req, res) {};
 module.exports.changeCurrentUserName = async function (req, res) {};
 module.exports.deleteUsers = async function (req, res) {};
