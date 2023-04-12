@@ -150,3 +150,22 @@ describe("getUser", () => {
     expect(result.body).not.toHaveProperty("password");
   });
 });
+
+describe("updateUsers", () => {
+  mockDbMethod("updateUsers");
+
+  it("should only pass valid update fields to database", async () => {
+    req.body = { ids: [1], isActive: true, isConfirmed: false, role: "admin" };
+    await users.updateUsers(req, res);
+    expect(usersDb.updateUsers).toHaveBeenCalledWith(req.body.ids, {
+      isActive: true,
+      isConfirmed: false,
+    });
+  });
+
+  it("should return the number of updated users", async () => {
+    usersDb.updateUsers.mockReturnValue(5);
+    const result = await users.updateUsers(req, res);
+    expect(result.body).toBe(5);
+  });
+});

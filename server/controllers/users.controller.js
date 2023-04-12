@@ -31,7 +31,12 @@ module.exports.getUser = async function (req, res) {
   return res.send(usersSrv.excludePassword(user));
 };
 
-module.exports.updateUsers = async function (req, res) {};
+module.exports.updateUsers = async function (req, res) {
+  const updateCommand = usersSrv.buildUpdateCommand(req.body);
+  const result = await usersDb.updateUsers(req.body.ids, updateCommand);
+  return res.send(result);
+};
+
 module.exports.updateUser = async function (req, res) {};
 module.exports.changeCurrentUserPassword = async function (req, res) {};
 module.exports.changeCurrentUserName = async function (req, res) {};
