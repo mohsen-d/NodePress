@@ -31,3 +31,8 @@ module.exports.buildUpdateCommand = function (fields) {
 
   return updateCommand;
 };
+
+module.exports.filterUpdateFields = function (fields) {
+  const { name, password, isActive, isConfirmed, role, ...invalid } = fields;
+  return { name, password, isActive, isConfirmed, role };
+};

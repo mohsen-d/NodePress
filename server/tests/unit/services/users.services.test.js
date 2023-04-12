@@ -82,3 +82,25 @@ describe("buildUpdateCommand", () => {
     expect(result).not.toHaveProperty("b");
   });
 });
+
+describe("filterUpdateFields", () => {
+  it("should return allowed fields", () => {
+    const fields = {
+      name: "name",
+      email: "w@e.r",
+      password: "123",
+      isActive: true,
+      isConfirmed: true,
+      _id: 1,
+    };
+
+    const result = usersSrv.filterUpdateFields(fields);
+
+    expect(result).not.toHaveProperty("email");
+    expect(result).not.toHaveProperty("_id");
+    expect(result).toHaveProperty("name");
+    expect(result).toHaveProperty("password");
+    expect(result).toHaveProperty("isActive");
+    expect(result).toHaveProperty("isConfirmed");
+  });
+});
