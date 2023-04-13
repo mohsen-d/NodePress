@@ -1,4 +1,6 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const config = require("config");
 
 module.exports.excludePasswords = function (users) {
   const usersWithoutPassword = [];
@@ -51,4 +53,12 @@ module.exports.comparePasswords = async function (
   if (typeof plainPassword != "string" || typeof hashedPassword != "string")
     return false;
   return await bcrypt.compare(plainPassword, hashedPassword);
+};
+
+module.exports.verifyToken = function (token) {
+  try {
+    return jwt.verify(token, config.get("jwtPrivateKey"));
+  } catch (ex) {
+    return false;
+  }
 };

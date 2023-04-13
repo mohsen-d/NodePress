@@ -150,3 +150,26 @@ describe("comparePasswords", () => {
     expect(result).toBe(false);
   });
 });
+
+describe("verifyToken", () => {
+  it("should return false if token is invalid", () => {
+    let result = usersSrv.verifyToken("invalid token");
+    expect(result).toBe(false);
+
+    result = usersSrv.verifyToken(false);
+    expect(result).toBe(false);
+  });
+
+  it("should return decoded token if valid", () => {
+    const token = new User({
+      name: "name",
+      email: "s@w.c",
+      password: "1234567@W",
+    }).generateAuthToken();
+
+    const result = usersSrv.verifyToken(token);
+    expect(result).not.toBe(false);
+    expect(result).toHaveProperty("_id");
+    expect(result).toHaveProperty("role");
+  });
+});
