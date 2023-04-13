@@ -55,7 +55,26 @@ module.exports.updateUser = async function (req, res) {
   return res.send(usersSrv.excludePassword(updatedUser));
 };
 
-module.exports.changeCurrentUserPassword = async function (req, res) {};
+module.exports.changeCurrentUserPassword = async function (req, res) {
+  const user = usersDb.getUser(req.user.id);
+
+  const isPasswordValid = await usersSrv.comparePasswords(
+    req.body.currentPassword,
+    user.password
+  );
+  if (!isPasswordValid) return res.status(400).send(errorsSrv._400("password"));
+
+  user.password = req.body.newPassword;
+
+  const { isValid, errors } = User.validate(user);
+  if (!isValid) return res.status(400).send(errorsSrv._400("password"));
+
+  user.password = await usersSrv.hashPassword(user.password);
+
+  await usersDb.updateUser(user);
+
+  return res.send(true);
+};
 module.exports.changeCurrentUserName = async function (req, res) {};
 
 module.exports.deleteUsers = async function (req, res) {

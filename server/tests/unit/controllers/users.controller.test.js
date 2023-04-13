@@ -424,3 +424,54 @@ describe("signup", () => {
     expect(result.body).toBe(true);
   });
 });
+
+describe("updateCurrentUserPassword", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("getUser");
+    mockDbMethod("updateUser");
+    usersSrv.comparePasswords = jest.fn();
+    hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
+  });
+
+  beforeEach(() => {
+    req.user = { id: 1 };
+    req.body = { currentPassword: user.password, newPassword: "123456&V" };
+  });
+
+  it("should return with 400 error if current password is invalid", async () => {
+    usersDb.getUser.mockReturnValue(userInstance());
+    usersSrv.comparePasswords.mockReturnValue(false);
+    const result = await users.changeCurrentUserPassword(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should return with 400 error if new password is invalid", async () => {
+    usersDb.getUser.mockReturnValue(userInstance());
+    usersSrv.comparePasswords.mockReturnValue(true);
+    req.body.newPassword = "123";
+    const result = await users.changeCurrentUserPassword(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should hash the new password", async () => {
+    usersDb.getUser.mockReturnValue(userInstance());
+    usersSrv.comparePasswords.mockReturnValue(true);
+    await users.changeCurrentUserPassword(req, res);
+    expect(hashPasswordFn).toHaveBeenCalledWith(req.body.newPassword);
+  });
+
+  it("should pass user with new password to database", async () => {
+    usersDb.getUser.mockReturnValue(userInstance());
+    usersSrv.comparePasswords.mockReturnValue(true);
+    await users.changeCurrentUserPassword(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalled();
+  });
+
+  it("should return true after user is updated", async () => {
+    usersDb.getUser.mockReturnValue(userInstance());
+    usersSrv.comparePasswords.mockReturnValue(true);
+    const result = await users.changeCurrentUserPassword(req, res);
+    expect(result.body).toBe(true);
+  });
+});
