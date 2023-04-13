@@ -37,13 +37,7 @@ module.exports.buildUpdateCommand = function (fields) {
 
 module.exports.filterUpdateFields = function (fields) {
   const validFields = ["name", "password", "isActive", "isConfirmed", "role"];
-  const output = {};
-
-  Object.keys(fields).forEach((f) => {
-    if (validFields.includes(f)) output[f] = fields[f];
-  });
-
-  return output;
+  return filterFields(fields, validFields);
 };
 
 module.exports.comparePasswords = async function (
@@ -62,3 +56,18 @@ module.exports.verifyToken = function (token) {
     return false;
   }
 };
+
+module.exports.filterSignupFields = function (fields) {
+  const validFields = ["name", "email", "password"];
+  return filterFields(fields, validFields);
+};
+
+function filterFields(fields, validFields) {
+  const output = {};
+
+  Object.keys(fields).forEach((f) => {
+    if (validFields.includes(f)) output[f] = fields[f];
+  });
+
+  return output;
+}
