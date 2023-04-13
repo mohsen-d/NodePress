@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const usersDb = require("../database/users.db");
 const errorsSrv = require("../services/errors.services");
 const usersSrv = require("../services/users.services");
+const emailSrv = require("../services/email.services");
 
 module.exports.addUser = async function (req, res) {
   const newUser = new User(req.body);
@@ -106,4 +107,22 @@ module.exports.signIn = async function (req, res) {
   return res.send(token);
 };
 
-module.exports.signUp = async function (req, res) {};
+module.exports.signUp = async function (req, res) {
+  const fields = usersSrv.filterSignupFields(req.body);
+
+  const newUser = new User(fields);
+
+  const { errors, isValid } = User.validate(newUser);
+  if (!isValid) return res.status(400).send(errors);
+
+  const emailExists = await usersDb.emailExists(newUser.email);
+  if (emailExists) return res.status(400).send(errorsSrv._400("email"));
+
+  newUser.password = await usersSrv.hashPassword(newUser.password);
+
+  await usersDb.addUser(newUser);
+
+  await emailSrv.sendConfirmEmail(newUser._id.toHexString());
+
+  return res.send(true);
+};

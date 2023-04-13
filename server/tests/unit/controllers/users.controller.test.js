@@ -1,6 +1,7 @@
 const users = require("../../../controllers/users.controller");
 const usersDb = require("../../../database/users.db");
 const usersSrv = require("../../../services/users.services");
+const emailSrv = require("../../../services/email.services");
 const User = require("../../../models/user.model");
 
 const req = { user: { isAuthenticated: true } };
@@ -371,5 +372,55 @@ describe("signIn", () => {
 
     const result = await users.signIn(req, res);
     expect(usersSrv.verifyToken(result.body)).not.toBe(false);
+  });
+});
+
+describe("signup", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("addUser");
+    mockDbMethod("emailExists");
+    hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
+    emailFn = jest.spyOn(emailSrv, "sendConfirmEmail");
+  });
+
+  beforeEach(() => {
+    req.body = { ...user };
+  });
+  it("should return with 400 error if input is invalid", async () => {
+    req.body.name = undefined;
+    const result = await users.signUp(req, res);
+    expect(result.status).toBe(400);
+    expect(result.body["name"]).not.toBeUndefined;
+  });
+
+  it("should return with 400 error if email already exists", async () => {
+    usersDb.emailExists.mockReturnValue(true);
+    const result = await users.signUp(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should hash user's password", async () => {
+    usersDb.emailExists.mockReturnValue(false);
+    await users.signUp(req, res);
+    expect(hashPasswordFn).toHaveBeenCalledWith(req.body.password);
+  });
+
+  it("should pass new user to database to be saved", async () => {
+    usersDb.emailExists.mockReturnValue(false);
+    await users.signUp(req, res);
+    expect(usersDb.addUser).toHaveBeenCalled();
+  });
+
+  it("should call email service to send confirm email", async () => {
+    usersDb.emailExists.mockReturnValue(false);
+    await users.signUp(req, res);
+    expect(emailSrv.sendConfirmEmail).toHaveBeenCalled();
+  });
+
+  it("should return true after user is added", async () => {
+    usersDb.emailExists.mockReturnValue(false);
+    const result = await users.signUp(req, res);
+    expect(result.body).toBe(true);
   });
 });
