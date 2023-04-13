@@ -475,3 +475,40 @@ describe("updateCurrentUserPassword", () => {
     expect(result.body).toBe(true);
   });
 });
+
+describe("updateCurrentUserName", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("getUser");
+    mockDbMethod("updateUser");
+  });
+
+  beforeEach(() => {
+    req.user = { id: 1 };
+    req.body = { name: "new name" };
+  });
+
+  it("should return with 400 error if new name is invalid", async () => {
+    req.body.name = undefined;
+    usersDb.getUser.mockReturnValue(userInstance());
+
+    const result = await users.changeCurrentUserName(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should pass user with new name to database", async () => {
+    usersDb.getUser.mockReturnValue(userInstance());
+
+    await users.changeCurrentUserName(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalled();
+  });
+
+  it("should return updated user", async () => {
+    const user = userInstance();
+    usersDb.getUser.mockReturnValue(user);
+    usersDb.updateUser.mockReturnValue(user);
+
+    const result = await users.changeCurrentUserName(req, res);
+    expect(result.body).toHaveProperty("name", req.body.name);
+  });
+});

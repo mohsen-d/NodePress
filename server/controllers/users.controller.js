@@ -75,7 +75,19 @@ module.exports.changeCurrentUserPassword = async function (req, res) {
 
   return res.send(true);
 };
-module.exports.changeCurrentUserName = async function (req, res) {};
+
+module.exports.changeCurrentUserName = async function (req, res) {
+  let user = usersDb.getUser(req.user.id);
+
+  user.name = req.body.name;
+
+  const { isValid, errors } = User.validate(user);
+  if (!isValid) return res.status(400).send(errorsSrv._400("name"));
+
+  user = await usersDb.updateUser(user);
+
+  return res.send(user);
+};
 
 module.exports.deleteUsers = async function (req, res) {
   const result = await usersDb.deleteUsers(req.body.ids);
