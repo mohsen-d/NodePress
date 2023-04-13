@@ -56,7 +56,7 @@ module.exports.updateUser = async function (req, res) {
 };
 
 module.exports.changeCurrentUserPassword = async function (req, res) {
-  const user = usersDb.getUser(req.user.id);
+  const user = await usersDb.getUser(req.user.id);
 
   const isPasswordValid = await usersSrv.comparePasswords(
     req.body.currentPassword,
@@ -77,7 +77,7 @@ module.exports.changeCurrentUserPassword = async function (req, res) {
 };
 
 module.exports.changeCurrentUserName = async function (req, res) {
-  let user = usersDb.getUser(req.user.id);
+  let user = await usersDb.getUser(req.user.id);
 
   user.name = req.body.name;
 
@@ -103,7 +103,7 @@ module.exports.deleteUser = async function (req, res) {
 };
 
 module.exports.deleteCurrentUser = async function (req, res) {
-  const user = usersDb.getUser(req.user.id);
+  const user = await usersDb.getUser(req.user.id);
 
   const isValidPassword = await usersSrv.comparePasswords(
     req.body.password,
@@ -118,7 +118,7 @@ module.exports.deleteCurrentUser = async function (req, res) {
 };
 
 module.exports.signIn = async function (req, res) {
-  const user = usersDb.getByEmail(req.body.email);
+  const user = await usersDb.getByEmail(req.body.email);
   if (!user) return res.status(400).send(errorsSrv._400("email/password"));
 
   const isValidPassword = usersSrv.comparePasswords(
