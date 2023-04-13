@@ -43,3 +43,12 @@ module.exports.filterUpdateFields = function (fields) {
 
   return output;
 };
+
+module.exports.comparePasswords = async function (
+  plainPassword,
+  hashedPassword
+) {
+  if (typeof plainPassword != "string" || typeof hashedPassword != "string")
+    return false;
+  return await bcrypt.compare(plainPassword, hashedPassword);
+};

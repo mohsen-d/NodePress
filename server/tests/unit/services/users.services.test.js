@@ -129,3 +129,24 @@ describe("filterUpdateFields", () => {
     expect(result).not.toHaveProperty("isConfirmed");
   });
 });
+
+describe("comparePasswords", () => {
+  it("should return true if passwords match", async () => {
+    const password = "Q123456$";
+    const hashedPassword = await usersSrv.hashPassword(password);
+    const result = await usersSrv.comparePasswords(password, hashedPassword);
+    expect(result).toBe(true);
+  });
+
+  it("should return false if passwords don't match", async () => {
+    const hashedPassword = await usersSrv.hashPassword("Q123456$");
+    const result = await usersSrv.comparePasswords("123456", hashedPassword);
+    expect(result).toBe(false);
+  });
+
+  it("should return false if passwords are invalid", async () => {
+    const hashedPassword = await usersSrv.hashPassword("Q123456$");
+    const result = await usersSrv.comparePasswords(123456, hashedPassword);
+    expect(result).toBe(false);
+  });
+});
