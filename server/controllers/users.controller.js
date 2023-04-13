@@ -70,6 +70,20 @@ module.exports.deleteUser = async function (req, res) {
   return res.send(user);
 };
 
-module.exports.deleteCurrentUser = async function (req, res) {};
+module.exports.deleteCurrentUser = async function (req, res) {
+  const user = usersDb.getUser(req.user.id);
+
+  const isValidPassword = await usersSrv.comparePasswords(
+    req.body.password,
+    user.password
+  );
+
+  if (!isValidPassword) return res.status(400).send(errorsSrv._400("password"));
+
+  const deletedUser = await usersDb.deleteUser(req.user.id);
+
+  return res.send(deletedUser ? true : false);
+};
+
 module.exports.signIn = async function (req, res) {};
 module.exports.signUp = async function (req, res) {};

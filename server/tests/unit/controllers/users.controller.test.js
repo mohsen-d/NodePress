@@ -274,3 +274,47 @@ describe("deleteUser", () => {
     expect(result.body).toEqual(user);
   });
 });
+
+describe("deleteCurrentUser", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("deleteCurrentUser");
+    mockDbMethod("getUser");
+    mockDbMethod("deleteUser");
+    usersSrv.comparePasswords = jest.fn();
+
+    req.user = { id: 1 };
+    req.body = { password: "123" };
+  });
+
+  beforeEach(() => {
+    usersSrv.comparePasswords.mockReturnValue(true);
+    usersDb.getUser.mockReturnValue(user);
+  });
+
+  it("should return with 400 error if password is invalid", async () => {
+    usersSrv.comparePasswords.mockReturnValue(false);
+
+    const result = await users.deleteCurrentUser(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should pass user to database to be deleted if password is valid", async () => {
+    await users.deleteCurrentUser(req, res);
+    expect(usersDb.deleteUser).toHaveBeenCalledWith(req.user.id);
+  });
+
+  it("should return true if user is deleted", async () => {
+    usersDb.deleteUser.mockReturnValue(user);
+
+    const result = await users.deleteCurrentUser(req, res);
+    expect(result.body).toBe(true);
+  });
+
+  it("should return false if user is not deleted", async () => {
+    usersDb.deleteUser.mockReturnValue(null);
+
+    const result = await users.deleteCurrentUser(req, res);
+    expect(result.body).toBe(false);
+  });
+});
