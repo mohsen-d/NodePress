@@ -85,5 +85,25 @@ module.exports.deleteCurrentUser = async function (req, res) {
   return res.send(deletedUser ? true : false);
 };
 
-module.exports.signIn = async function (req, res) {};
+module.exports.signIn = async function (req, res) {
+  const user = usersDb.getByEmail(req.body.email);
+  if (!user) return res.status(400).send(errorsSrv._400("email/password"));
+
+  const isValidPassword = usersSrv.comparePasswords(
+    req.body.password,
+    user.password
+  );
+  if (!isValidPassword)
+    return res.status(400).send(errorsSrv._400("email/password"));
+
+  user.logins.push({
+    date: Date.now,
+    ip: req.ip,
+  });
+  await usersDb.updateUser(user);
+
+  const token = user.generateAuthToken();
+  return res.send(token);
+};
+
 module.exports.signUp = async function (req, res) {};

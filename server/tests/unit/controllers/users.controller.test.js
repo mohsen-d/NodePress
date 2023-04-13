@@ -318,3 +318,58 @@ describe("deleteCurrentUser", () => {
     expect(result.body).toBe(false);
   });
 });
+
+describe("signIn", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("getByEmail");
+    mockDbMethod("updateUser");
+    usersSrv.comparePasswords = jest.fn();
+
+    req.body = { password: user.password, email: user.email };
+  });
+
+  it("should return with 400 error if email matches no user", async () => {
+    const result = await users.signIn(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should return with 400 error if password is invalid", async () => {
+    usersDb.getByEmail.mockReturnValue(user);
+    usersSrv.comparePasswords.mockReturnValue(false);
+
+    const result = await users.signIn(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should add new login to user.logins if signed in successfully", async () => {
+    const user = userInstance();
+
+    usersDb.getByEmail.mockReturnValue(user);
+    usersSrv.comparePasswords.mockReturnValue(true);
+
+    expect(user.logins.length).toBe(0);
+    await users.signIn(req, res);
+    expect(user.logins.length).toBe(1);
+  });
+
+  it("should update user if signed in successfully", async () => {
+    const user = userInstance();
+
+    usersDb.getByEmail.mockReturnValue(user);
+    usersSrv.comparePasswords.mockReturnValue(true);
+
+    await users.signIn(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalledWith(user);
+  });
+
+  it("should return a token if signed in successfully", async () => {
+    const user = userInstance();
+
+    usersDb.getByEmail.mockReturnValue(user);
+    usersSrv.comparePasswords.mockReturnValue(true);
+
+    const result = await users.signIn(req, res);
+    expect(usersSrv.verifyToken(result.body)).not.toBe(false);
+  });
+});
