@@ -4,6 +4,7 @@
   "errors": {
     "404": "can't find the $var.",
     "400": "bad request. invalid $var.",
-    "401": "Access denied. Please login first."
+    "401": "Access denied. Please login first.",
+    "403": "You do not have permission."
   }
 }

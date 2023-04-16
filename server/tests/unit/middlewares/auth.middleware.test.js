@@ -30,12 +30,12 @@ const res = {
 
 beforeEach(() => {
   status = undefined;
-  req = { route: { path: "/" }, header: () => {} };
+  req = { baseUrl: "/", header: () => {} };
 });
 
 describe("public routes", () => {
   it("should ignore and pass", () => {
-    req.route.path = "/posts";
+    req.baseUrl = "/";
     middleware(req, res, next);
     expect(status).toBe(200);
   });
@@ -43,14 +43,69 @@ describe("public routes", () => {
 
 describe("admin routes", () => {
   it("should return with 401 error if no token is provided", () => {
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
 
     const result = middleware(req, res, next);
     expect(result.status).toBe(401);
   });
 
   it("should return with 400 error if token is invalid", () => {
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/admin";
+    req.header = () => "invalid token";
+
+    const result = middleware(req, res, next);
+    expect(result.status).toBe(400);
+  });
+
+  it("should return with 403 error if token is valid but role is not admin", () => {
+    const token = jwt.sign(
+      { role: "user", _id: 1 },
+      config.get("jwtPrivateKey")
+    );
+    req.baseUrl = "/admin";
+    req.header = () => token;
+
+    const result = middleware(req, res, next);
+    expect(result.status).toBe(403);
+  });
+
+  it("should pass if token is valid and role is admin", () => {
+    const token = jwt.sign(
+      { role: "admin", _id: 1 },
+      config.get("jwtPrivateKey")
+    );
+    req.baseUrl = "/admin";
+    req.header = () => token;
+
+    middleware(req, res, next);
+    expect(status).toBe(200);
+  });
+
+  it("should put decoded data in req.user if token is valid and role is admin", () => {
+    const token = jwt.sign(
+      { role: "admin", _id: 1 },
+      config.get("jwtPrivateKey")
+    );
+    req.baseUrl = "/admin";
+    req.header = () => token;
+
+    middleware(req, res, next);
+    expect(req.user).toBeDefined();
+    expect(req.user.role).toBe("admin");
+    expect(req.user._id).toBe(1);
+  });
+});
+
+describe("user routes", () => {
+  it("should return with 401 error if no token is provided", () => {
+    req.baseUrl = "/user";
+
+    const result = middleware(req, res, next);
+    expect(result.status).toBe(401);
+  });
+
+  it("should return with 400 error if token is invalid", () => {
+    req.baseUrl = "/user";
     req.header = () => "invalid token";
 
     const result = middleware(req, res, next);
@@ -59,10 +114,10 @@ describe("admin routes", () => {
 
   it("should pass if token is valid", () => {
     const token = jwt.sign(
-      { username: "mohsen", _id: 1 },
+      { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/user";
     req.header = () => token;
 
     middleware(req, res, next);
@@ -71,15 +126,15 @@ describe("admin routes", () => {
 
   it("should put decoded data in req.user if token is valid", () => {
     const token = jwt.sign(
-      { username: "mohsen", _id: 1 },
+      { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.route.path = "/admin/posts";
+    req.baseUrl = "/user";
     req.header = () => token;
 
     middleware(req, res, next);
     expect(req.user).toBeDefined();
-    expect(req.user.username).toBe("mohsen");
+    expect(req.user.role).toBe("user");
     expect(req.user._id).toBe(1);
   });
 });
