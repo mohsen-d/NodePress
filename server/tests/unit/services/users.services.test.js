@@ -173,3 +173,153 @@ describe("verifyToken", () => {
     expect(result).toHaveProperty("role");
   });
 });
+
+describe("buildGetFilter", () => {
+  it("should use the sent value for _id, isActive and isConfirmed", () => {
+    const id = new Array(25).join(1);
+    const filter = usersSrv.buildGetFilter({
+      _id: id,
+      isActive: true,
+      isConfirmed: false,
+    });
+
+    expect(filter).toHaveProperty("_id", id);
+    expect(filter).toHaveProperty("isActive", true);
+    expect(filter).toHaveProperty("isConfirmed", false);
+  });
+
+  it("should use regex for string props", () => {
+    const filter = usersSrv.buildGetFilter({
+      name: "name",
+      email: "q@w.c",
+      role: "user",
+      source: "local",
+    });
+
+    expect(filter).toHaveProperty("name", /name/i);
+    expect(filter).toHaveProperty("email", /q@w.c/i);
+    expect(filter).toHaveProperty("role", /user/i);
+    expect(filter).toHaveProperty("source", /local/i);
+  });
+
+  it("should use $gte and $lte for createdAt", () => {
+    const filter = usersSrv.buildGetFilter({
+      createdAt: { from: "12/12/2022", to: "12/12/2022" },
+    });
+    expect(filter).toHaveProperty("createdAt", {
+      $gte: "12/12/2022",
+      $lte: "12/12/2022",
+    });
+  });
+
+  it("should return empty object if an empty object is provided", () => {
+    const filter = usersSrv.buildGetFilter({});
+    expect(filter).toEqual({});
+  });
+
+  it("should return empty object if no parameter is provided", () => {
+    const filter = usersSrv.buildGetFilter();
+    expect(filter).toEqual({});
+  });
+
+  it("should skip parameter if value is undefined or null", () => {
+    const filter = usersSrv.buildGetFilter({
+      _id: undefined,
+      name: null,
+      isActive: true,
+    });
+
+    expect(filter).toHaveProperty("isActive", true);
+    expect(filter).not.toHaveProperty("_id");
+    expect(filter).not.toHaveProperty("name");
+  });
+
+  it("should skip parameter if value is invalid", () => {
+    const filter = usersSrv.buildGetFilter({
+      _id: 1,
+      role: "",
+      createdAt: 2,
+      isConfirmed: true,
+    });
+
+    expect(filter).toHaveProperty("isConfirmed", true);
+    expect(filter).not.toHaveProperty("_id");
+    expect(filter).not.toHaveProperty("role");
+    expect(filter).not.toHaveProperty("createdAt");
+  });
+
+  it("should truncate string parameters longer than 50 characters instead of deleting them", () => {
+    const filter = usersSrv.buildGetFilter({
+      name: new Array(55).join("a"),
+    });
+
+    expect(filter).toHaveProperty(
+      "name",
+      new RegExp(new Array(51).join("a"), "i")
+    );
+  });
+});
+
+describe("buildGetOptions", () => {
+  const options = {
+    sort: { createdAt: -1 },
+    limit: 10,
+    skip: 0,
+  };
+
+  it("should return default values if empty object is passed", () => {
+    const result = usersSrv.buildGetOptions({});
+    expect(result).toEqual(options);
+  });
+
+  it("should return default values if no parameter is passed", () => {
+    const result = usersSrv.buildGetOptions();
+    expect(result).toEqual(options);
+  });
+
+  it("should return default values if invalid values are sent", () => {
+    const result = usersSrv.buildGetOptions({
+      sort: { by: "createdAt", order: true },
+      pageSize: "a",
+      page: "a",
+    });
+
+    expect(result).toHaveProperty("sort", { createdAt: -1 });
+    expect(result).toHaveProperty("limit", 10);
+    expect(result).toHaveProperty("skip", 0);
+  });
+
+  it("should return default value if out-of-range values are sent", () => {
+    const result = usersSrv.buildGetOptions({
+      sort: { by: "name", order: 2 },
+      pageSize: 1000,
+      page: 5000,
+    });
+
+    expect(result).toHaveProperty("sort", { createdAt: -1 });
+    expect(result).toHaveProperty("limit", 10);
+    expect(result).toHaveProperty("skip", 0);
+  });
+
+  it("should set options if parameters are valid", () => {
+    const result = usersSrv.buildGetOptions({
+      pageSize: 25,
+      page: 2,
+      sort: { by: "name", order: 1 },
+    });
+    expect(result).toHaveProperty("sort", { name: 1 });
+    expect(result).toHaveProperty("limit", 25);
+    expect(result).toHaveProperty("skip", 25);
+  });
+
+  it("should not reject numeric values sent in string as invalid", () => {
+    const result = usersSrv.buildGetOptions({
+      pageSize: "15",
+      page: "3",
+      sort: { by: "name", order: "-1" },
+    });
+    expect(result).toHaveProperty("sort", { name: -1 });
+    expect(result).toHaveProperty("limit", 15);
+    expect(result).toHaveProperty("skip", 30);
+  });
+});
