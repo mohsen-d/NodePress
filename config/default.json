@@ -1,6 +1,14 @@
 {
+  "domain": "undefined",
   "database": "undefined",
   "jwtPrivateKey": "undefined",
+  "mail": {
+    "host": "undefined",
+    "port": "undefined",
+    "username": "undefined",
+    "password": "undefined",
+    "from": "undefined"
+  },
   "errors": {
     "404": "can't find the $var.",
     "400": "bad request. invalid $var.",

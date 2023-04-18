@@ -1,3 +1,11 @@
 {
-  "jwtPrivateKey": "nodepress_privatekey"
+  "domain": "NODEPRESS_DOMAIN",
+  "jwtPrivateKey": "NODEPRESS_PRIVATEKEY",
+  "mail": {
+    "host": "NODEPRESS_MAIL_HOST",
+    "port": "NODEPRESS_MAIL_PORT",
+    "username": "NODEPRESS_MAIL_USERNAME",
+    "password": "NODEPRESS_MAIL_PASSWORD",
+    "from": "NODEPRESS_MAIL_FROM"
+  }
 }
