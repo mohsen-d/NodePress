@@ -96,16 +96,17 @@ describe("admin routes", () => {
   });
 });
 
-describe("user routes", () => {
-  it("should return with 401 error if no token is provided", () => {
-    req.baseUrl = "/user";
+describe("user/loggedin routes", () => {
+  beforeEach(() => {
+    req.baseUrl = "/user/loggedin";
+  });
 
+  it("should return with 401 error if no token is provided", () => {
     const result = middleware(req, res, next);
     expect(result.status).toBe(401);
   });
 
   it("should return with 400 error if token is invalid", () => {
-    req.baseUrl = "/user";
     req.header = () => "invalid token";
 
     const result = middleware(req, res, next);
@@ -117,7 +118,6 @@ describe("user routes", () => {
       { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.baseUrl = "/user";
     req.header = () => token;
 
     middleware(req, res, next);
@@ -129,12 +129,19 @@ describe("user routes", () => {
       { role: "user", _id: 1 },
       config.get("jwtPrivateKey")
     );
-    req.baseUrl = "/user";
     req.header = () => token;
 
     middleware(req, res, next);
     expect(req.user).toBeDefined();
     expect(req.user.role).toBe("user");
     expect(req.user._id).toBe(1);
+  });
+});
+
+describe("user/guest routes", () => {
+  it("should ignore and pass", () => {
+    req.baseUrl = "/user/guest/email/confirm";
+    middleware(req, res, next);
+    expect(status).toBe(200);
   });
 });
