@@ -14,20 +14,24 @@ describe("user routes", () => {
 
   it("should map each route to its corresponding controller method", () => {
     const usersRoute = require("../../../../routes/user/users.routes");
-    expect(router.get).toHaveBeenCalledWith("/", usersCtrl.getUser);
+    expect(router.get).toHaveBeenCalledWith("/loggedin/", usersCtrl.getUser);
     expect(router.put).toHaveBeenCalledWith(
-      "/password",
+      "/loggedin/password",
       usersCtrl.changeCurrentUserPassword
     );
     expect(router.put).toHaveBeenCalledWith(
-      "/name",
+      "/loggedin/name",
       usersCtrl.changeCurrentUserName
     );
     expect(router.delete).toHaveBeenCalledWith(
-      "/",
+      "/loggedin/",
       usersCtrl.deleteCurrentUser
     );
-    expect(router.post).toHaveBeenCalledWith("/signin", usersCtrl.signIn);
-    expect(router.post).toHaveBeenCalledWith("/signup", usersCtrl.signUp);
+    expect(router.post).toHaveBeenCalledWith("/guest/signin", usersCtrl.signIn);
+    expect(router.post).toHaveBeenCalledWith("/guest/signup", usersCtrl.signUp);
+    expect(router.post).toHaveBeenCalledWith(
+      "/guest/email/confirm/:token",
+      usersCtrl.confirm
+    );
   });
 });
