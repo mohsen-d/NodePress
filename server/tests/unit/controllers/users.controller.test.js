@@ -387,6 +387,7 @@ describe("signup", () => {
   beforeEach(() => {
     req.body = { ...user };
   });
+
   it("should return with 400 error if input is invalid", async () => {
     req.body.name = undefined;
     const result = await users.signUp(req, res);
@@ -413,15 +414,32 @@ describe("signup", () => {
   });
 
   it("should call email service to send confirm email", async () => {
+    const returnValue = userInstance();
+
+    usersDb.addUser.mockReturnValue(returnValue);
     usersDb.emailExists.mockReturnValue(false);
+
     await users.signUp(req, res);
+
     expect(emailSrv.sendConfirmEmail).toHaveBeenCalled();
   });
 
-  it("should return true after user is added", async () => {
+  it("should return true after user is added successfully", async () => {
+    const returnValue = userInstance();
+
+    usersDb.addUser.mockReturnValue(returnValue);
     usersDb.emailExists.mockReturnValue(false);
+
     const result = await users.signUp(req, res);
     expect(result.body).toBe(true);
+  });
+
+  it("should return false if adding new user fails", async () => {
+    usersDb.addUser.mockReturnValue(null);
+    usersDb.emailExists.mockReturnValue(false);
+
+    const result = await users.signUp(req, res);
+    expect(result.body).toBe(false);
   });
 });
 

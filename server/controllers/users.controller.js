@@ -151,9 +151,13 @@ module.exports.signUp = async function (req, res) {
 
   newUser.password = await usersSrv.hashPassword(newUser.password);
 
-  await usersDb.addUser(newUser);
+  newUser.setToken();
 
-  await emailSrv.sendConfirmEmail(newUser._id.toHexString());
+  const addedUser = await usersDb.addUser(newUser);
+
+  if (!addedUser) return res.send(false);
+
+  await emailSrv.sendConfirmEmail(newUser.token.toHexString());
 
   return res.send(true);
 };
