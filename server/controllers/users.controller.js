@@ -163,7 +163,7 @@ module.exports.signUp = async function (req, res) {
 };
 
 module.exports.confirm = async function (req, res) {
-  const user = usersDb.getByToken(req.params.token);
+  const user = await usersDb.getByToken(req.params.token);
 
   if (!user) return res.status(404).send(errorsSrv._404("user"));
 
@@ -176,7 +176,7 @@ module.exports.confirm = async function (req, res) {
     return res.send(false);
   }
 
-  emailSrv.sendAccountStatusEmail(user.email, "confirmed");
+  await emailSrv.sendAccountStatusEmail(user.email, "confirmed");
 
   return res.send(true);
 };
