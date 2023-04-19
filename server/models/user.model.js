@@ -45,11 +45,20 @@ const schema = new mongoose.Schema({
   isActive: { type: Boolean, default: false },
   isConfirmed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  token: { type: mongoose.SchemaTypes.ObjectId },
   source: stringOptions({
     enum: sources,
     default: sources[0],
   }),
 });
+
+schema.methods.setToken = function () {
+  this.token = new mongoose.Types.ObjectId();
+};
+
+schema.methods.removeToken = function () {
+  this.token = undefined;
+};
 
 schema.methods.generateAuthToken = function () {
   const token = jwt.sign(

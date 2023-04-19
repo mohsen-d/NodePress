@@ -59,3 +59,5 @@ module.exports.deleteUser = async function (id) {
   const deletedUser = await User.findByIdAndDelete(id);
   return deletedUser;
 };
+
+module.exports.getByToken = async function (token) {};

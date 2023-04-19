@@ -151,9 +151,32 @@ module.exports.signUp = async function (req, res) {
 
   newUser.password = await usersSrv.hashPassword(newUser.password);
 
-  await usersDb.addUser(newUser);
+  newUser.setToken();
 
-  await emailSrv.sendConfirmEmail(newUser._id.toHexString());
+  const addedUser = await usersDb.addUser(newUser);
+
+  if (!addedUser) return res.send(false);
+
+  await emailSrv.sendConfirmEmail(newUser.token.toHexString());
+
+  return res.send(true);
+};
+
+module.exports.confirm = async function (req, res) {
+  const user = usersDb.getByToken(req.params.token);
+
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  user.isConfirmed = true;
+  user.token = undefined;
+
+  const updatedUser = await usersDb.updateUser(user);
+
+  if (!updatedUser) {
+    return res.send(false);
+  }
+
+  emailSrv.sendAccountStatusEmail(user.email, "confirmed");
 
   return res.send(true);
 };

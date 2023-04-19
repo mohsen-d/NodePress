@@ -5,7 +5,7 @@ const errorsSrv = require("../services/errors.services");
 module.exports = function (req, res, next) {
   const baseUrl = req.baseUrl;
 
-  const needsLoggedInUser = baseUrl.startsWith("/user");
+  const needsLoggedInUser = baseUrl.startsWith("/user/loggedin");
   const needsAdminUser = baseUrl.startsWith("/admin");
 
   if (!needsLoggedInUser && !needsAdminUser) next();

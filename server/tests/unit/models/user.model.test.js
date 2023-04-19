@@ -322,3 +322,32 @@ describe("generateAuthToken", () => {
     expect(decodedToken).toHaveProperty("role", "user");
   });
 });
+
+describe("setToken", () => {
+  it("should set the value for user.token field", () => {
+    const user = new User({
+      name: "firstName lastName",
+      email: "foo@bar.com",
+      password: "123",
+    });
+
+    expect(user.token).toBeUndefined();
+    user.setToken();
+    expect(user.token).not.toBeUndefined();
+  });
+});
+
+describe("removeToken", () => {
+  it("should remove the value in user.token field", () => {
+    const user = new User({
+      name: "firstName lastName",
+      email: "foo@bar.com",
+      password: "123",
+    });
+
+    user.setToken();
+    expect(user.token).not.toBeUndefined();
+    user.removeToken();
+    expect(user.token).toBeUndefined();
+  });
+});
