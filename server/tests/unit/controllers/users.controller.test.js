@@ -594,3 +594,62 @@ describe("confirm", () => {
     expect(result.body).toBe(false);
   });
 });
+
+describe("sendPasswordRecoveryEmail", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("updateUser");
+    mockDbMethod("getByEmail");
+    emailSrv.sendPasswordRecoveryEmail = jest.fn();
+  });
+
+  req.params = { email: "w@q.c" };
+
+  it("should return with 404 error if email matches no user", async () => {
+    usersDb.getByEmail.mockReturnValue(null);
+    const result = await users.sendPasswordRecoveryEmail(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should set user.token field", async () => {
+    const returnValue = userInstance();
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    expect(returnValue.token).toBeUndefined();
+    await users.sendPasswordRecoveryEmail(req, res);
+    expect(returnValue.token).not.toBeUndefined();
+  });
+
+  it("should pass changed user to database", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.sendPasswordRecoveryEmail(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalled();
+  });
+
+  it("should return true if user updated successfully", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    const result = await users.sendPasswordRecoveryEmail(req, res);
+    expect(result.body).toBe(true);
+  });
+
+  it("should send recovery email to user after user updated successfully", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.sendPasswordRecoveryEmail(req, res);
+    expect(emailSrv.sendPasswordRecoveryEmail).toHaveBeenCalled();
+  });
+
+  it("should return false if failed to update user", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(null);
+    const result = await users.sendPasswordRecoveryEmail(req, res);
+    expect(result.body).toBe(false);
+  });
+});

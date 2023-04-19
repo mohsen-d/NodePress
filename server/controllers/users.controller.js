@@ -180,3 +180,19 @@ module.exports.confirm = async function (req, res) {
 
   return res.send(true);
 };
+
+module.exports.sendPasswordRecoveryEmail = async function (req, res) {
+  const user = await usersDb.getByEmail(req.params.email);
+
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  user.setToken();
+
+  const updatedUser = await usersDb.updateUser(user);
+
+  if (!updatedUser) return res.send(false);
+
+  await emailSrv.sendPasswordRecoveryEmail(user.email, user.token);
+
+  return res.send(true);
+};
