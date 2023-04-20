@@ -196,3 +196,27 @@ module.exports.sendPasswordRecoveryEmail = async function (req, res) {
 
   return res.send(true);
 };
+
+module.exports.recoverPassword = async function (req, res) {
+  const user = await usersDb.getByEmail(req.params.email);
+
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  if (!user.token || user.token.toHexString() !== req.body.token)
+    return res.status(400).send(errorsSrv._400("token"));
+
+  user.password = req.body.password;
+
+  const { isValid, errors } = User.validate(user);
+  if (!isValid) return res.status(400).send(errors);
+
+  user.password = await usersSrv.hashPassword(user.password);
+  user.token = undefined;
+
+  const updatedUser = await usersDb.updateUser(user);
+  if (!updatedUser) return res.send(false);
+
+  emailSrv.sendAccountStatusEmail("recovered");
+
+  return res.send(true);
+};
