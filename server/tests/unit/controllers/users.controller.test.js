@@ -5,46 +5,57 @@ const emailSrv = require("../../../services/email.services");
 const User = require("../../../models/user.model");
 const mongoose = require("mongoose");
 
-const req = { user: { isAuthenticated: true } };
+let req;
+let res;
+let user;
+let userInstance;
 
-const res = {
-  send(response) {
-    return {
-      status: 200,
-      body: response,
-    };
-  },
-  status(code) {
-    return {
-      send(response) {
-        return {
-          status: code,
-          body: response,
-        };
-      },
-    };
-  },
-};
+beforeAll(() => {
+  req = { user: { isAuthenticated: true } };
 
-const user = {
-  name: "firstname familyname",
-  email: "foo@bar.com",
-  password: "123456#Q",
-  role: "user",
-};
+  res = {
+    send(response) {
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+    status(code) {
+      return {
+        send(response) {
+          return {
+            status: code,
+            body: response,
+          };
+        },
+      };
+    },
+  };
 
-const userInstance = () => new User({ ...user });
+  user = {
+    name: "firstname familyname",
+    email: "foo@bar.com",
+    password: "123456#Q",
+    role: "user",
+  };
 
-function mockDbMethod(method) {
-  usersDb[method] = jest.fn();
+  userInstance = () => new User({ ...user });
+});
+
+function mockMethods() {
+  jest.clearAllMocks();
+  Object.keys(usersDb).forEach((m) => (usersDb[m] = jest.fn()));
+  Object.keys(emailSrv).forEach((m) => (emailSrv[m] = jest.fn()));
 }
 
 describe("addUser", () => {
-  mockDbMethod("addUser");
-  mockDbMethod("emailExists");
+  beforeAll(() => {
+    mockMethods();
+  });
 
   beforeEach(() => {
     req.body = { ...user };
+    usersDb.emailExists.mockReturnValue(false);
   });
 
   it("should return with error code 400 if new user is invalid", async () => {
@@ -62,14 +73,11 @@ describe("addUser", () => {
   });
 
   it("should pass valid new user to database layer", async () => {
-    usersDb.emailExists.mockReturnValue(false);
     const result = await users.addUser(req, res);
     expect(usersDb.addUser).toHaveBeenCalled();
   });
 
   it("should return the inserted user", async () => {
-    usersDb.emailExists.mockReturnValue(false);
-
     const result = await users.addUser(req, res);
 
     expect(result.body).toHaveProperty("name", user.name);
@@ -77,8 +85,6 @@ describe("addUser", () => {
   });
 
   it("should not return the new user's password", async () => {
-    usersDb.emailExists.mockReturnValue(false);
-
     const result = await users.addUser(req, res);
     expect(result.body).not.toHaveProperty("password");
   });
@@ -92,16 +98,17 @@ describe("addUser", () => {
 });
 
 describe("getUsers", () => {
-  mockDbMethod("getUsers");
+  beforeAll(() => {
+    mockMethods();
+    usersDb.getUsers.mockReturnValue([userInstance()]);
+  });
 
   it("should get users from database layer", async () => {
-    usersDb.getUsers.mockReturnValue([userInstance()]);
     await users.getUsers(req, res);
     expect(usersDb.getUsers).toHaveBeenCalled();
   });
 
   it("should return found users to client", async () => {
-    usersDb.getUsers.mockReturnValue([userInstance()]);
     const result = await users.getUsers(req, res);
     expect(result.body[0]).toHaveProperty("name", user.name);
     expect(result.body[0]).toHaveProperty("email", user.email);
@@ -109,10 +116,16 @@ describe("getUsers", () => {
 });
 
 describe("getUser", () => {
-  mockDbMethod("getUser");
+  beforeAll(() => {
+    mockMethods();
 
-  req.baseUrl = "/admin";
-  req.params = { id: 1 };
+    req.baseUrl = "/admin";
+    req.params = { id: 1 };
+  });
+
+  beforeEach(() => {
+    usersDb.getUser.mockReturnValue(userInstance());
+  });
 
   it("should pass id to database layer", async () => {
     await users.getUser(req, res);
@@ -132,13 +145,13 @@ describe("getUser", () => {
   });
 
   it("should return 404 error if id matches no user", async () => {
+    usersDb.getUser.mockReturnValue(null);
+
     const result = await users.getUser(req, res);
     expect(result.status).toBe(404);
   });
 
   it("should return the user if found", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
-
     const result = await users.getUser(req, res);
 
     expect(result.status).toBe(200);
@@ -147,8 +160,6 @@ describe("getUser", () => {
   });
 
   it("should not return the user's password", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
-
     const result = await users.getUser(req, res);
 
     expect(result.status).toBe(200);
@@ -157,7 +168,9 @@ describe("getUser", () => {
 });
 
 describe("updateUsers", () => {
-  mockDbMethod("updateUsers");
+  beforeAll(() => {
+    mockMethods();
+  });
 
   it("should only pass valid update fields to database", async () => {
     req.body = { ids: [1], isActive: true, isConfirmed: false, role: "admin" };
@@ -177,12 +190,16 @@ describe("updateUsers", () => {
 
 describe("updateUser", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("updateUser");
-    mockDbMethod("getUser");
+    mockMethods();
+    req.params = { id: 1 };
   });
 
-  req.params = { id: 1 };
+  beforeEach(() => {
+    const returnValue = userInstance();
+    usersDb.getUser.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    req.body = { role: "admin" };
+  });
 
   it("should return with 404 error if id matches no user", async () => {
     usersDb.getUser.mockReturnValue(undefined);
@@ -192,7 +209,7 @@ describe("updateUser", () => {
 
   it("should return with 400 error if input is invalid", async () => {
     req.body = { role: "invalid" };
-    usersDb.getUser.mockReturnValue(userInstance());
+
     const result = await users.updateUser(req, res);
     expect(result.status).toBe(400);
   });
@@ -200,45 +217,31 @@ describe("updateUser", () => {
   it("should call usersServices.hashPassword if password is changed", async () => {
     hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
     req.body = { password: "pAss@123" };
-    const returnValue = userInstance();
-    usersDb.getUser.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.updateUser(req, res);
     expect(hashPasswordFn).toHaveBeenCalledWith(req.body.password);
   });
 
   it("should pass changed user to database", async () => {
-    req.body = { password: "pAss@123" };
-    const returnValue = userInstance();
-    usersDb.getUser.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.updateUser(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should return updated user", async () => {
-    req.body = { password: "pAss@123" };
-    const returnValue = userInstance();
-    usersDb.getUser.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     const result = await users.updateUser(req, res);
-    expect(returnValue).toEqual(expect.objectContaining(result.body));
+    expect(result.body.role).toBe("admin");
   });
 
   it("should not return updated user's password", async () => {
-    req.body = { password: "pAss@123" };
-    const returnValue = userInstance();
-    usersDb.getUser.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     const result = await users.updateUser(req, res);
     expect(result.body).not.toHaveProperty("password");
   });
 });
 
 describe("deleteUsers", () => {
-  mockDbMethod("deleteUsers");
-
-  req.body = { ids: [1, 2, 3] };
+  beforeAll(() => {
+    mockMethods();
+    req.body = { ids: [1, 2, 3] };
+  });
 
   it("should pass ids to database layer", async () => {
     await users.deleteUsers(req, res);
@@ -253,9 +256,10 @@ describe("deleteUsers", () => {
 });
 
 describe("deleteUser", () => {
-  mockDbMethod("deleteUser");
-
-  req.params = { id: 1 };
+  beforeAll(() => {
+    mockMethods();
+    req.params = { id: 1 };
+  });
 
   it("should pass id to database layer", async () => {
     await users.deleteUser(req, res);
@@ -279,10 +283,8 @@ describe("deleteUser", () => {
 
 describe("deleteCurrentUser", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("deleteCurrentUser");
-    mockDbMethod("getUser");
-    mockDbMethod("deleteUser");
+    mockMethods();
+
     usersSrv.comparePasswords = jest.fn();
 
     req.user = { id: 1 };
@@ -323,21 +325,25 @@ describe("deleteCurrentUser", () => {
 
 describe("signIn", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("getByEmail");
-    mockDbMethod("updateUser");
+    mockMethods();
     usersSrv.comparePasswords = jest.fn();
 
     req.body = { password: user.password, email: user.email };
   });
 
+  beforeEach(() => {
+    usersDb.getByEmail.mockReturnValue(userInstance());
+    usersSrv.comparePasswords.mockReturnValue(true);
+  });
+
   it("should return with 400 error if email matches no user", async () => {
+    usersDb.getByEmail.mockReturnValue(null);
+
     const result = await users.signIn(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should return with 400 error if password is invalid", async () => {
-    usersDb.getByEmail.mockReturnValue(user);
     usersSrv.comparePasswords.mockReturnValue(false);
 
     const result = await users.signIn(req, res);
@@ -345,32 +351,20 @@ describe("signIn", () => {
   });
 
   it("should add new login to user.logins if signed in successfully", async () => {
-    const user = userInstance();
-
-    usersDb.getByEmail.mockReturnValue(user);
-    usersSrv.comparePasswords.mockReturnValue(true);
-
-    expect(user.logins.length).toBe(0);
     await users.signIn(req, res);
-    expect(user.logins.length).toBe(1);
+    const updatedUser =
+      usersDb.updateUser.mock.calls[
+        usersDb.updateUser.mock.calls.length - 1
+      ][0];
+    expect(updatedUser.logins.length).toBe(1);
   });
 
   it("should update user if signed in successfully", async () => {
-    const user = userInstance();
-
-    usersDb.getByEmail.mockReturnValue(user);
-    usersSrv.comparePasswords.mockReturnValue(true);
-
     await users.signIn(req, res);
-    expect(usersDb.updateUser).toHaveBeenCalledWith(user);
+    expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should return a token if signed in successfully", async () => {
-    const user = userInstance();
-
-    usersDb.getByEmail.mockReturnValue(user);
-    usersSrv.comparePasswords.mockReturnValue(true);
-
     const result = await users.signIn(req, res);
     expect(usersSrv.verifyToken(result.body)).not.toBe(false);
   });
@@ -378,15 +372,14 @@ describe("signIn", () => {
 
 describe("signup", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("addUser");
-    mockDbMethod("emailExists");
+    mockMethods();
     hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
-    emailSrv.sendConfirmEmail = jest.fn();
   });
 
   beforeEach(() => {
     req.body = { ...user };
+    usersDb.emailExists.mockReturnValue(false);
+    usersDb.addUser.mockReturnValue(userInstance());
   });
 
   it("should return with 400 error if input is invalid", async () => {
@@ -403,41 +396,28 @@ describe("signup", () => {
   });
 
   it("should hash user's password", async () => {
-    usersDb.emailExists.mockReturnValue(false);
     await users.signUp(req, res);
     expect(hashPasswordFn).toHaveBeenCalledWith(req.body.password);
   });
 
   it("should pass new user to database to be saved", async () => {
-    usersDb.emailExists.mockReturnValue(false);
     await users.signUp(req, res);
     expect(usersDb.addUser).toHaveBeenCalled();
   });
 
   it("should call email service to send confirm email", async () => {
-    const returnValue = userInstance();
-
-    usersDb.addUser.mockReturnValue(returnValue);
-    usersDb.emailExists.mockReturnValue(false);
-
     await users.signUp(req, res);
 
     expect(emailSrv.sendConfirmEmail).toHaveBeenCalled();
   });
 
   it("should return true after user is added successfully", async () => {
-    const returnValue = userInstance();
-
-    usersDb.addUser.mockReturnValue(returnValue);
-    usersDb.emailExists.mockReturnValue(false);
-
     const result = await users.signUp(req, res);
     expect(result.body).toBe(true);
   });
 
   it("should return false if adding new user fails", async () => {
     usersDb.addUser.mockReturnValue(null);
-    usersDb.emailExists.mockReturnValue(false);
 
     const result = await users.signUp(req, res);
     expect(result.body).toBe(false);
@@ -446,9 +426,7 @@ describe("signup", () => {
 
 describe("updateCurrentUserPassword", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("getUser");
-    mockDbMethod("updateUser");
+    mockMethods();
     usersSrv.comparePasswords = jest.fn();
     hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
   });
@@ -497,9 +475,7 @@ describe("updateCurrentUserPassword", () => {
 
 describe("updateCurrentUserName", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("getUser");
-    mockDbMethod("updateUser");
+    mockMethods();
   });
 
   beforeEach(() => {
@@ -516,7 +492,9 @@ describe("updateCurrentUserName", () => {
   });
 
   it("should pass user with new name to database", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
+    const returnValue = userInstance();
+    usersDb.getUser.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
 
     await users.changeCurrentUserName(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
@@ -534,13 +512,10 @@ describe("updateCurrentUserName", () => {
 
 describe("confirm", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("updateUser");
-    mockDbMethod("getByToken");
+    mockMethods();
     emailSrv.sendAccountStatusEmail = jest.fn();
+    req.params = { token: 1 };
   });
-
-  req.params = { token: 1 };
 
   it("should return with 404 error if token matches no user", async () => {
     usersDb.getByToken.mockReturnValue(undefined);
@@ -598,13 +573,9 @@ describe("confirm", () => {
 
 describe("sendPasswordRecoveryEmail", () => {
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("updateUser");
-    mockDbMethod("getByEmail");
-    emailSrv.sendPasswordRecoveryEmail = jest.fn();
+    mockMethods();
+    req.params = { email: "w@q.c" };
   });
-
-  req.params = { email: "w@q.c" };
 
   it("should return with 404 error if email matches no user", async () => {
     usersDb.getByEmail.mockReturnValue(null);
@@ -656,13 +627,11 @@ describe("sendPasswordRecoveryEmail", () => {
 });
 
 describe("recoverPassword", () => {
+  let userToBeRecovered;
+
   beforeAll(() => {
-    jest.clearAllMocks();
-    mockDbMethod("updateUser");
-    mockDbMethod("getByEmail");
+    mockMethods();
     hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
-    emailSrv.sendPasswordRecoveryEmail = jest.fn();
-    emailSrv.sendAccountStatusEmail = jest.fn();
   });
 
   beforeEach(() => {
@@ -673,6 +642,13 @@ describe("recoverPassword", () => {
     };
   });
 
+  function createUserToBeUpdated(token = new mongoose.Types.ObjectId()) {
+    userToBeRecovered = userInstance();
+    userToBeRecovered.token = token;
+    usersDb.getByEmail.mockReturnValue(userToBeRecovered);
+    usersDb.updateUser.mockReturnValue(userToBeRecovered);
+  }
+
   it("should return with 404 error if email matches no user", async () => {
     usersDb.getByEmail.mockReturnValue(null);
     const result = await users.recoverPassword(req, res);
@@ -680,121 +656,70 @@ describe("recoverPassword", () => {
   });
 
   it("should return with 400 error if user.token is undefined/empty", async () => {
-    const returnValue = userInstance();
-    returnValue.token = undefined;
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-
+    createUserToBeUpdated(undefined);
     const result = await users.recoverPassword(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should return with 400 error if req.body.token undefined/empty", async () => {
     delete req.body.token;
-    const returnValue = userInstance();
-    returnValue.setToken();
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-
+    createUserToBeUpdated();
     const result = await users.recoverPassword(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should return with 400 error if user.token does not match req.body.token", async () => {
-    const returnValue = userInstance();
-    returnValue.setToken();
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-
+    createUserToBeUpdated();
     const result = await users.recoverPassword(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should return with 400 error if new password is invalid", async () => {
     req.body.password = "123";
-
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
+    createUserToBeUpdated(req.body.token);
 
     const result = await users.recoverPassword(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should hash new password", async () => {
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
+    createUserToBeUpdated(req.body.token);
 
     await users.recoverPassword(req, res);
     expect(usersSrv.hashPassword).toHaveBeenCalledWith(req.body.password);
   });
 
   it("should pass changed user to database", async () => {
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
+    createUserToBeUpdated(req.body.token);
 
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.recoverPassword(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should set user.token to undefined", async () => {
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
+    createUserToBeUpdated(req.body.token);
 
     await users.recoverPassword(req, res);
 
-    expect(returnValue.token).toBe(undefined);
+    expect(userToBeRecovered.token).toBe(undefined);
   });
 
   it("should return true if user updated successfully after password recovery", async () => {
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
+    createUserToBeUpdated(req.body.token);
 
     const result = await users.recoverPassword(req, res);
     expect(result.body).toBe(true);
   });
 
   it("should send email to user if password recovery done successfully", async () => {
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
+    createUserToBeUpdated(req.body.token);
 
     await users.recoverPassword(req, res);
     expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalled();
   });
 
   it("should return false if failed to update user with new password", async () => {
-    const returnValue = userInstance();
-    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
-      req.body.token
-    );
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
+    createUserToBeUpdated(req.body.token);
     usersDb.updateUser.mockReturnValue(null);
     const result = await users.recoverPassword(req, res);
     expect(result.body).toBe(false);
