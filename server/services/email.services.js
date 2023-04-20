@@ -49,13 +49,22 @@ module.exports.sendPasswordRecoveryEmail = async function (to, token) {
 
 module.exports.sendAccountStatusEmail = async function (to, status) {
   const subject = "NodePress, Change in your account";
-  const content = `<b>Hey there! </b><br> Your account has become ${status}`;
+  const content = `<b>Hey there! </b><br> Your account has been ${status}`;
+
+  return await module.exports.sendEmail(to, subject, content);
+};
+
+module.exports.sendNewLoginEmail = async function (to, loginInfo) {
+  const subject = "NodePress, new login";
+  const content = `<b>Hey there! </b><br> You have logged in at ${loginInfo.date} from ${loginInfo.ip}`;
 
   return await module.exports.sendEmail(to, subject, content);
 };
 
 module.exports.sendEmail = async function (to, subject, content) {
-  mailOptions.to = to;
+  if (Array.isArray(to)) mailOptions.bcc = to;
+  else mailOptions.to = to;
+
   mailOptions.subject = subject;
   mailOptions.html = content;
 

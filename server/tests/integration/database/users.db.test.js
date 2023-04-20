@@ -416,3 +416,37 @@ describe("getByToken", () => {
     expect(result).toBeNull();
   });
 });
+
+describe("getEmails", () => {
+  let users;
+  beforeAll(async () => {
+    users = await User.insertMany([
+      {
+        name: "user one",
+        email: "t1@w.c",
+        password: "c1@W1234",
+      },
+      {
+        name: "user two",
+        email: "t2@w.c",
+        password: "c1@W1234",
+      },
+      {
+        name: "user three",
+        email: "t3@w.c",
+        password: "c1@W1234",
+      },
+    ]);
+  });
+
+  afterAll(async () => {
+    await User.deleteMany({});
+  });
+
+  it("should return emails of users with given ids", async () => {
+    const emails = await usersDb.getEmails([users[0]._id, users[2]._id]);
+    expect(emails.length).toBe(2);
+    expect(emails[0]).toBe("t1@w.c");
+    expect(emails[1]).toBe("t3@w.c");
+  });
+});

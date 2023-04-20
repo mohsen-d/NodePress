@@ -55,6 +55,14 @@ module.exports.deleteUsers = async function (ids) {
   return result.deletedCount;
 };
 
+module.exports.getEmails = async function (ids) {
+  const result = await User.find({ _id: { $in: ids } }).select({
+    email: 1,
+    _id: 0,
+  });
+  return result.map((d) => d.email);
+};
+
 module.exports.deleteUser = async function (id) {
   const deletedUser = await User.findByIdAndDelete(id);
   return deletedUser;

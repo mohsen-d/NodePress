@@ -17,6 +17,8 @@ module.exports.addUser = async function (req, res) {
 
   await usersDb.addUser(newUser);
 
+  await emailSrv.sendAccountStatusEmail(newUser.email, "created");
+
   return res.send(usersSrv.excludePassword(newUser));
 };
 
@@ -35,6 +37,10 @@ module.exports.getUser = async function (req, res) {
 module.exports.updateUsers = async function (req, res) {
   const updateCommand = usersSrv.buildUpdateCommand(req.body);
   const result = await usersDb.updateUsers(req.body.ids, updateCommand);
+
+  const emails = await usersDb.getEmails(req.body.ids);
+  await emailSrv.sendAccountStatusEmail(emails, "updated");
+
   return res.send(result);
 };
 
@@ -52,6 +58,9 @@ module.exports.updateUser = async function (req, res) {
   if (fields.password) user.password = usersSrv.hashPassword(user.password);
 
   const updatedUser = await usersDb.updateUser(user);
+
+  await emailSrv.sendAccountStatusEmail(user.email, "updated");
+
   return res.send(usersSrv.excludePassword(updatedUser));
 };
 
@@ -73,6 +82,8 @@ module.exports.changeCurrentUserPassword = async function (req, res) {
 
   await usersDb.updateUser(user);
 
+  await emailSrv.sendAccountStatusEmail(user.email, "updated");
+
   return res.send(true);
 };
 
@@ -86,11 +97,17 @@ module.exports.changeCurrentUserName = async function (req, res) {
 
   user = await usersDb.updateUser(user);
 
+  await emailSrv.sendAccountStatusEmail(user.email, "updated");
+
   return res.send(user);
 };
 
 module.exports.deleteUsers = async function (req, res) {
   const result = await usersDb.deleteUsers(req.body.ids);
+
+  const emails = await usersDb.getEmails(req.body.ids);
+  await emailSrv.sendAccountStatusEmail(emails, "deleted");
+
   return res.send(result);
 };
 
@@ -98,6 +115,8 @@ module.exports.deleteUser = async function (req, res) {
   const user = await usersDb.deleteUser(req.params.id);
 
   if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  await emailSrv.sendAccountStatusEmail(user.email, "deleted");
 
   return res.send(user);
 };
@@ -114,7 +133,11 @@ module.exports.deleteCurrentUser = async function (req, res) {
 
   const deletedUser = await usersDb.deleteUser(req.user.id);
 
-  return res.send(deletedUser ? true : false);
+  if (!deletedUser) return res.send(false);
+
+  await emailSrv.sendAccountStatusEmail(user.email, "deleted");
+
+  return res.send(true);
 };
 
 module.exports.signIn = async function (req, res) {
@@ -128,11 +151,16 @@ module.exports.signIn = async function (req, res) {
   if (!isValidPassword)
     return res.status(400).send(errorsSrv._400("email/password"));
 
-  user.logins.push({
+  const newLogin = {
     date: Date.now,
     ip: req.ip,
-  });
+  };
+
+  user.logins.push(newLogin);
+
   await usersDb.updateUser(user);
+
+  await emailSrv.sendNewLoginEmail(user.email, newLogin);
 
   const token = user.generateAuthToken();
   return res.send(token);
@@ -157,7 +185,8 @@ module.exports.signUp = async function (req, res) {
 
   if (!addedUser) return res.send(false);
 
-  await emailSrv.sendConfirmEmail(newUser.token.toHexString());
+  await emailSrv.sendAccountStatusEmail(newUser.email, "created");
+  await emailSrv.sendConfirmEmail(newUser.email, newUser.token.toHexString());
 
   return res.send(true);
 };
@@ -216,7 +245,7 @@ module.exports.recoverPassword = async function (req, res) {
   const updatedUser = await usersDb.updateUser(user);
   if (!updatedUser) return res.send(false);
 
-  emailSrv.sendAccountStatusEmail("recovered");
+  await emailSrv.sendAccountStatusEmail("recovered");
 
   return res.send(true);
 };
