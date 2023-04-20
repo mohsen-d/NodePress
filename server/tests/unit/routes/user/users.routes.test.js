@@ -33,5 +33,13 @@ describe("user routes", () => {
       "/guest/email/confirm/:token",
       usersCtrl.confirm
     );
+    expect(router.get).toHaveBeenCalledWith(
+      "/guest/password/recover/:email",
+      usersCtrl.sendPasswordRecoveryEmail
+    );
+    expect(router.put).toHaveBeenCalledWith(
+      "/guest/password/recover/:email",
+      usersCtrl.recoverPassword
+    );
   });
 });

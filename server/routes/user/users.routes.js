@@ -10,5 +10,10 @@ router.delete("/loggedin/", usersCtrl.deleteCurrentUser);
 router.post("/guest/signin", usersCtrl.signIn);
 router.post("/guest/signup", usersCtrl.signUp);
 router.post("/guest/email/confirm/:token", usersCtrl.confirm);
+router.get(
+  "/guest/password/recover/:email",
+  usersCtrl.sendPasswordRecoveryEmail
+);
+router.put("/guest/password/recover/:email", usersCtrl.recoverPassword);
 
 module.exports = router;

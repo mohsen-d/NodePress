@@ -163,12 +163,12 @@ module.exports.signUp = async function (req, res) {
 };
 
 module.exports.confirm = async function (req, res) {
-  const user = usersDb.getByToken(req.params.token);
+  const user = await usersDb.getByToken(req.params.token);
 
   if (!user) return res.status(404).send(errorsSrv._404("user"));
 
   user.isConfirmed = true;
-  user.token = undefined;
+  user.removeToken();
 
   const updatedUser = await usersDb.updateUser(user);
 
@@ -176,7 +176,47 @@ module.exports.confirm = async function (req, res) {
     return res.send(false);
   }
 
-  emailSrv.sendAccountStatusEmail(user.email, "confirmed");
+  await emailSrv.sendAccountStatusEmail(user.email, "confirmed");
+
+  return res.send(true);
+};
+
+module.exports.sendPasswordRecoveryEmail = async function (req, res) {
+  const user = await usersDb.getByEmail(req.params.email);
+
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  user.setToken();
+
+  const updatedUser = await usersDb.updateUser(user);
+
+  if (!updatedUser) return res.send(false);
+
+  await emailSrv.sendPasswordRecoveryEmail(user.email, user.token);
+
+  return res.send(true);
+};
+
+module.exports.recoverPassword = async function (req, res) {
+  const user = await usersDb.getByEmail(req.params.email);
+
+  if (!user) return res.status(404).send(errorsSrv._404("user"));
+
+  if (!user.token || user.token.toHexString() !== req.body.token)
+    return res.status(400).send(errorsSrv._400("token"));
+
+  user.password = req.body.password;
+
+  const { isValid, errors } = User.validate(user);
+  if (!isValid) return res.status(400).send(errors);
+
+  user.password = await usersSrv.hashPassword(user.password);
+  user.removeToken();
+
+  const updatedUser = await usersDb.updateUser(user);
+  if (!updatedUser) return res.send(false);
+
+  emailSrv.sendAccountStatusEmail("recovered");
 
   return res.send(true);
 };

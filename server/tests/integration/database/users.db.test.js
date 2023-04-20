@@ -386,3 +386,33 @@ describe("getUsers", () => {
     });
   });
 });
+
+describe("getByToken", () => {
+  let user = {
+    name: "name",
+    email: "e@m.i",
+    password: "1234@Wer",
+    token: new mongoose.Types.ObjectId(),
+  };
+
+  beforeAll(async () => {
+    await User.insertMany([user]);
+  });
+
+  afterAll(async () => {
+    await User.deleteMany({});
+  });
+
+  it("should return user with given token", async () => {
+    const result = await usersDb.getByToken(user.token);
+
+    expect(result).not.toBeUndefined();
+    expect(result.name).toBe("name");
+  });
+
+  it("should return null if token matches no user", async () => {
+    const result = await usersDb.getByToken(new mongoose.Types.ObjectId());
+
+    expect(result).toBeNull();
+  });
+});

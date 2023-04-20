@@ -3,6 +3,7 @@ const usersDb = require("../../../database/users.db");
 const usersSrv = require("../../../services/users.services");
 const emailSrv = require("../../../services/email.services");
 const User = require("../../../models/user.model");
+const mongoose = require("mongoose");
 
 const req = { user: { isAuthenticated: true } };
 
@@ -591,6 +592,211 @@ describe("confirm", () => {
     usersDb.getByToken.mockReturnValue(returnValue);
     usersDb.updateUser.mockReturnValue(null);
     const result = await users.confirm(req, res);
+    expect(result.body).toBe(false);
+  });
+});
+
+describe("sendPasswordRecoveryEmail", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("updateUser");
+    mockDbMethod("getByEmail");
+    emailSrv.sendPasswordRecoveryEmail = jest.fn();
+  });
+
+  req.params = { email: "w@q.c" };
+
+  it("should return with 404 error if email matches no user", async () => {
+    usersDb.getByEmail.mockReturnValue(null);
+    const result = await users.sendPasswordRecoveryEmail(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should set user.token field", async () => {
+    const returnValue = userInstance();
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    expect(returnValue.token).toBeUndefined();
+    await users.sendPasswordRecoveryEmail(req, res);
+    expect(returnValue.token).not.toBeUndefined();
+  });
+
+  it("should pass changed user to database", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.sendPasswordRecoveryEmail(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalled();
+  });
+
+  it("should return true if user updated successfully", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    const result = await users.sendPasswordRecoveryEmail(req, res);
+    expect(result.body).toBe(true);
+  });
+
+  it("should send recovery email to user after user updated successfully", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.sendPasswordRecoveryEmail(req, res);
+    expect(emailSrv.sendPasswordRecoveryEmail).toHaveBeenCalled();
+  });
+
+  it("should return false if failed to update user", async () => {
+    const returnValue = userInstance();
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(null);
+    const result = await users.sendPasswordRecoveryEmail(req, res);
+    expect(result.body).toBe(false);
+  });
+});
+
+describe("recoverPassword", () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+    mockDbMethod("updateUser");
+    mockDbMethod("getByEmail");
+    hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
+    emailSrv.sendPasswordRecoveryEmail = jest.fn();
+    emailSrv.sendAccountStatusEmail = jest.fn();
+  });
+
+  beforeEach(() => {
+    req.params = { email: "w@q.c" };
+    req.body = {
+      token: new mongoose.Types.ObjectId().toHexString(),
+      password: "123#45Pt",
+    };
+  });
+
+  it("should return with 404 error if email matches no user", async () => {
+    usersDb.getByEmail.mockReturnValue(null);
+    const result = await users.recoverPassword(req, res);
+    expect(result.status).toBe(404);
+  });
+
+  it("should return with 400 error if user.token is undefined/empty", async () => {
+    const returnValue = userInstance();
+    returnValue.token = undefined;
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    const result = await users.recoverPassword(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should return with 400 error if req.body.token undefined/empty", async () => {
+    delete req.body.token;
+    const returnValue = userInstance();
+    returnValue.setToken();
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    const result = await users.recoverPassword(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should return with 400 error if user.token does not match req.body.token", async () => {
+    const returnValue = userInstance();
+    returnValue.setToken();
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    const result = await users.recoverPassword(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should return with 400 error if new password is invalid", async () => {
+    req.body.password = "123";
+
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    const result = await users.recoverPassword(req, res);
+    expect(result.status).toBe(400);
+  });
+
+  it("should hash new password", async () => {
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+
+    await users.recoverPassword(req, res);
+    expect(usersSrv.hashPassword).toHaveBeenCalledWith(req.body.password);
+  });
+
+  it("should pass changed user to database", async () => {
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+    await users.recoverPassword(req, res);
+    expect(usersDb.updateUser).toHaveBeenCalled();
+  });
+
+  it("should set user.token to undefined", async () => {
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+
+    await users.recoverPassword(req, res);
+
+    expect(returnValue.token).toBe(undefined);
+  });
+
+  it("should return true if user updated successfully after password recovery", async () => {
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+
+    const result = await users.recoverPassword(req, res);
+    expect(result.body).toBe(true);
+  });
+
+  it("should send email to user if password recovery done successfully", async () => {
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(returnValue);
+
+    await users.recoverPassword(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalled();
+  });
+
+  it("should return false if failed to update user with new password", async () => {
+    const returnValue = userInstance();
+    returnValue.token = mongoose.Types.ObjectId.createFromHexString(
+      req.body.token
+    );
+
+    usersDb.getByEmail.mockReturnValue(returnValue);
+    usersDb.updateUser.mockReturnValue(null);
+    const result = await users.recoverPassword(req, res);
     expect(result.body).toBe(false);
   });
 });
