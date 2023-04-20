@@ -60,4 +60,10 @@ module.exports.deleteUser = async function (id) {
   return deletedUser;
 };
 
-module.exports.getByToken = async function (token) {};
+module.exports.getByToken = async function (token) {
+  const result = await User.findOne({
+    token: token,
+  });
+
+  return result;
+};
