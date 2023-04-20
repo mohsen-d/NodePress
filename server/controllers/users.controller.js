@@ -168,7 +168,7 @@ module.exports.confirm = async function (req, res) {
   if (!user) return res.status(404).send(errorsSrv._404("user"));
 
   user.isConfirmed = true;
-  user.token = undefined;
+  user.removeToken();
 
   const updatedUser = await usersDb.updateUser(user);
 
@@ -211,7 +211,7 @@ module.exports.recoverPassword = async function (req, res) {
   if (!isValid) return res.status(400).send(errors);
 
   user.password = await usersSrv.hashPassword(user.password);
-  user.token = undefined;
+  user.removeToken();
 
   const updatedUser = await usersDb.updateUser(user);
   if (!updatedUser) return res.send(false);
