@@ -95,6 +95,14 @@ describe("addUser", () => {
     await users.addUser(req, res);
     expect(hashPasswordFn).toHaveBeenCalledWith(user.password);
   });
+
+  it("should send email to created user address", async () => {
+    await users.addUser(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "created"
+    );
+  });
 });
 
 describe("getUsers", () => {
@@ -186,6 +194,15 @@ describe("updateUsers", () => {
     const result = await users.updateUsers(req, res);
     expect(result.body).toBe(5);
   });
+
+  it("should send email to updated users", async () => {
+    usersDb.getEmails.mockReturnValue([user.email]);
+    await users.updateUsers(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      [user.email],
+      "updated"
+    );
+  });
 });
 
 describe("updateUser", () => {
@@ -235,6 +252,14 @@ describe("updateUser", () => {
     const result = await users.updateUser(req, res);
     expect(result.body).not.toHaveProperty("password");
   });
+
+  it("should send email to updated user", async () => {
+    await users.updateUser(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "updated"
+    );
+  });
 });
 
 describe("deleteUsers", () => {
@@ -252,6 +277,15 @@ describe("deleteUsers", () => {
     usersDb.deleteUsers.mockReturnValue(3);
     const result = await users.deleteUsers(req, res);
     expect(result.body).toBe(3);
+  });
+
+  it("should send email to deleted users", async () => {
+    usersDb.getEmails.mockReturnValue([user.email]);
+    await users.deleteUsers(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      [user.email],
+      "deleted"
+    );
   });
 });
 
@@ -278,6 +312,14 @@ describe("deleteUser", () => {
 
     expect(result.status).toBe(200);
     expect(result.body).toEqual(user);
+  });
+
+  it("should send email to deleted user", async () => {
+    await users.deleteUser(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "deleted"
+    );
   });
 });
 
@@ -320,6 +362,16 @@ describe("deleteCurrentUser", () => {
 
     const result = await users.deleteCurrentUser(req, res);
     expect(result.body).toBe(false);
+  });
+
+  it("should send email to deleted user", async () => {
+    usersDb.deleteUser.mockReturnValue(user);
+
+    await users.deleteCurrentUser(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "deleted"
+    );
   });
 });
 
@@ -368,6 +420,11 @@ describe("signIn", () => {
     const result = await users.signIn(req, res);
     expect(usersSrv.verifyToken(result.body)).not.toBe(false);
   });
+
+  it("should send email to logged-in user", async () => {
+    await users.signIn(req, res);
+    expect(emailSrv.sendNewLoginEmail).toHaveBeenCalled();
+  });
 });
 
 describe("signup", () => {
@@ -411,6 +468,14 @@ describe("signup", () => {
     expect(emailSrv.sendConfirmEmail).toHaveBeenCalled();
   });
 
+  it("should send email to created user", async () => {
+    await users.signUp(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "created"
+    );
+  });
+
   it("should return true after user is added successfully", async () => {
     const result = await users.signUp(req, res);
     expect(result.body).toBe(true);
@@ -427,6 +492,7 @@ describe("signup", () => {
 describe("updateCurrentUserPassword", () => {
   beforeAll(() => {
     mockMethods();
+    usersDb.getUser.mockReturnValue(userInstance());
     usersSrv.comparePasswords = jest.fn();
     hashPasswordFn = jest.spyOn(usersSrv, "hashPassword");
   });
@@ -434,48 +500,51 @@ describe("updateCurrentUserPassword", () => {
   beforeEach(() => {
     req.user = { id: 1 };
     req.body = { currentPassword: user.password, newPassword: "123456&V" };
+    usersSrv.comparePasswords.mockReturnValue(true);
   });
 
   it("should return with 400 error if current password is invalid", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
     usersSrv.comparePasswords.mockReturnValue(false);
     const result = await users.changeCurrentUserPassword(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should return with 400 error if new password is invalid", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
-    usersSrv.comparePasswords.mockReturnValue(true);
     req.body.newPassword = "123";
     const result = await users.changeCurrentUserPassword(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should hash the new password", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
-    usersSrv.comparePasswords.mockReturnValue(true);
     await users.changeCurrentUserPassword(req, res);
     expect(hashPasswordFn).toHaveBeenCalledWith(req.body.newPassword);
   });
 
   it("should pass user with new password to database", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
-    usersSrv.comparePasswords.mockReturnValue(true);
     await users.changeCurrentUserPassword(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should return true after user is updated", async () => {
-    usersDb.getUser.mockReturnValue(userInstance());
-    usersSrv.comparePasswords.mockReturnValue(true);
     const result = await users.changeCurrentUserPassword(req, res);
     expect(result.body).toBe(true);
+  });
+
+  it("should send email to updated user", async () => {
+    await users.changeCurrentUserPassword(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "updated"
+    );
   });
 });
 
 describe("updateCurrentUserName", () => {
   beforeAll(() => {
     mockMethods();
+    const userToBeUpdated = userInstance();
+    usersDb.getUser.mockReturnValue(userToBeUpdated);
+    usersDb.updateUser.mockReturnValue(userToBeUpdated);
   });
 
   beforeEach(() => {
@@ -485,36 +554,44 @@ describe("updateCurrentUserName", () => {
 
   it("should return with 400 error if new name is invalid", async () => {
     req.body.name = undefined;
-    usersDb.getUser.mockReturnValue(userInstance());
 
     const result = await users.changeCurrentUserName(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should pass user with new name to database", async () => {
-    const returnValue = userInstance();
-    usersDb.getUser.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
-
     await users.changeCurrentUserName(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should return updated user", async () => {
-    const user = userInstance();
-    usersDb.getUser.mockReturnValue(user);
-    usersDb.updateUser.mockReturnValue(user);
-
     const result = await users.changeCurrentUserName(req, res);
     expect(result.body).toHaveProperty("name", req.body.name);
+  });
+
+  it("should send email to updated user", async () => {
+    await users.changeCurrentUserName(req, res);
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "updated"
+    );
   });
 });
 
 describe("confirm", () => {
   beforeAll(() => {
     mockMethods();
+
     emailSrv.sendAccountStatusEmail = jest.fn();
     req.params = { token: 1 };
+  });
+
+  beforeEach(() => {
+    const userToBeConfirmed = userInstance();
+    userToBeConfirmed.isConfirmed = false;
+    userToBeConfirmed.token = userToBeConfirmed._id;
+    usersDb.getByToken.mockReturnValue(userToBeConfirmed);
+    usersDb.updateUser.mockReturnValue(userToBeConfirmed);
   });
 
   it("should return with 404 error if token matches no user", async () => {
@@ -524,47 +601,36 @@ describe("confirm", () => {
   });
 
   it("should pass changed user to database", async () => {
-    const returnValue = userInstance();
-    usersDb.getByToken.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.confirm(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should set user.isConfirmed to true and user.token to undefined", async () => {
-    const returnValue = userInstance();
-
-    returnValue.isConfirmed = false;
-    returnValue.token = returnValue._id;
-
-    usersDb.getByToken.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
-
     await users.confirm(req, res);
 
-    expect(returnValue.isConfirmed).toBe(true);
-    expect(returnValue.token).toBe(undefined);
+    const updatedUser =
+      usersDb.updateUser.mock.calls[
+        usersDb.updateUser.mock.calls.length - 1
+      ][0];
+
+    expect(updatedUser.isConfirmed).toBe(true);
+    expect(updatedUser.token).toBe(undefined);
   });
 
   it("should return true if confirmed successfully", async () => {
-    const returnValue = userInstance();
-    usersDb.getByToken.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     const result = await users.confirm(req, res);
     expect(result.body).toBe(true);
   });
 
   it("should send email to user if confirmed successfully", async () => {
-    const returnValue = userInstance();
-    usersDb.getByToken.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.confirm(req, res);
-    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalled();
+    expect(emailSrv.sendAccountStatusEmail).toHaveBeenCalledWith(
+      user.email,
+      "confirmed"
+    );
   });
 
   it("should return false if confirm failed", async () => {
-    const returnValue = userInstance();
-    usersDb.getByToken.mockReturnValue(returnValue);
     usersDb.updateUser.mockReturnValue(null);
     const result = await users.confirm(req, res);
     expect(result.body).toBe(false);
@@ -577,6 +643,13 @@ describe("sendPasswordRecoveryEmail", () => {
     req.params = { email: "w@q.c" };
   });
 
+  beforeEach(() => {
+    const userToBeRecovered = userInstance();
+    userToBeRecovered.token = undefined;
+    usersDb.getByEmail.mockReturnValue(userToBeRecovered);
+    usersDb.updateUser.mockReturnValue(userToBeRecovered);
+  });
+
   it("should return with 404 error if email matches no user", async () => {
     usersDb.getByEmail.mockReturnValue(null);
     const result = await users.sendPasswordRecoveryEmail(req, res);
@@ -584,42 +657,30 @@ describe("sendPasswordRecoveryEmail", () => {
   });
 
   it("should set user.token field", async () => {
-    const returnValue = userInstance();
-
-    usersDb.getByEmail.mockReturnValue(returnValue);
-
-    expect(returnValue.token).toBeUndefined();
     await users.sendPasswordRecoveryEmail(req, res);
-    expect(returnValue.token).not.toBeUndefined();
+    const userToBeRecovered =
+      usersDb.updateUser.mock.calls[
+        usersDb.updateUser.mock.calls.length - 1
+      ][0];
+    expect(userToBeRecovered.token).not.toBeUndefined();
   });
 
   it("should pass changed user to database", async () => {
-    const returnValue = userInstance();
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.sendPasswordRecoveryEmail(req, res);
     expect(usersDb.updateUser).toHaveBeenCalled();
   });
 
   it("should return true if user updated successfully", async () => {
-    const returnValue = userInstance();
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     const result = await users.sendPasswordRecoveryEmail(req, res);
     expect(result.body).toBe(true);
   });
 
   it("should send recovery email to user after user updated successfully", async () => {
-    const returnValue = userInstance();
-    usersDb.getByEmail.mockReturnValue(returnValue);
-    usersDb.updateUser.mockReturnValue(returnValue);
     await users.sendPasswordRecoveryEmail(req, res);
     expect(emailSrv.sendPasswordRecoveryEmail).toHaveBeenCalled();
   });
 
   it("should return false if failed to update user", async () => {
-    const returnValue = userInstance();
-    usersDb.getByEmail.mockReturnValue(returnValue);
     usersDb.updateUser.mockReturnValue(null);
     const result = await users.sendPasswordRecoveryEmail(req, res);
     expect(result.body).toBe(false);
