@@ -330,7 +330,7 @@ describe("updatePost", () => {
   });
 });
 
-describe("updatePostsDisplay", () => {
+describe("updatePosts", () => {
   let posts;
 
   beforeEach(async () => {
@@ -356,10 +356,23 @@ describe("updatePostsDisplay", () => {
 
   it("should change display for posts with given ids", async () => {
     const ids = [posts[0]._id, posts[2]._id];
-    const updatedCount = await postsDb.updatePostsDisplay(ids, false);
+    const updatedCount = await postsDb.updatePosts(ids, {
+      display: false,
+    });
     expect(updatedCount).toBe(2);
 
     const updatedPosts = await Post.find({ display: false });
+    expect(updatedPosts.length).toBe(2);
+  });
+
+  it("should change showInFeed for posts with given ids", async () => {
+    const ids = [posts[0]._id, posts[2]._id];
+    const updatedCount = await postsDb.updatePosts(ids, {
+      showInFeed: false,
+    });
+    expect(updatedCount).toBe(2);
+
+    const updatedPosts = await Post.find({ showInFeed: false });
     expect(updatedPosts.length).toBe(2);
   });
 });
