@@ -1,27 +1,45 @@
 const postsSrv = require("../../../services/posts.services");
 
 describe("buildGetParameters", () => {
-  const req = { user: { isAuthenticated: true } };
-  const params = { id: 1 };
-  it("should return params untouched if user is authenticated", () => {
-    const result = postsSrv.buildGetParameters(req, params);
-    expect(result).not.toHaveProperty("display");
+  let req;
+
+  beforeEach(() => {
+    req = { params: {}, body: {}, baseUrl: "/posts" };
   });
 
-  it("should add display:true to params if user is not authenticated", () => {
-    req.user.isAuthenticated = false;
-    const result = postsSrv.buildGetParameters(req, params);
-    expect(result).toHaveProperty("display");
+  it("should return params untouched if we're in admin section", () => {
+    req.baseUrl = "/admin";
+    const result = postsSrv.buildGetParameters(req, req.body);
+    expect(result).not.toHaveProperty("display");
+    expect(result).not.toHaveProperty("showInFeed");
+  });
+
+  it("should only add display:true to params if a visitor wants to see a post", () => {
+    req.params.id = 1;
+    const result = postsSrv.buildGetParameters(req, req.params);
+    expect(result).toHaveProperty("display", true);
+    expect(result).not.toHaveProperty("showInFeed");
+  });
+
+  it("should add display:true & showInFeed:true to params if a visitor wants to see list of posts", () => {
+    const result = postsSrv.buildGetParameters(req, req.body);
+    expect(result).toHaveProperty("display", true);
+    expect(result).toHaveProperty("showInFeed", true);
   });
 });
 
 describe("buildGetFilter", () => {
-  it("should use the sent value for _id and display", () => {
+  it("should use the sent value for _id & display & showInFeed", () => {
     const id = new Array(25).join(1);
-    const filter = postsSrv.buildGetFilter({ _id: id, display: true });
+    const filter = postsSrv.buildGetFilter({
+      _id: id,
+      display: true,
+      showInFeed: true,
+    });
 
     expect(filter).toHaveProperty("_id", id);
     expect(filter).toHaveProperty("display", true);
+    expect(filter).toHaveProperty("showInFeed", true);
   });
 
   it("should use regex for string props", () => {
@@ -161,5 +179,33 @@ describe("buildGetOptions", () => {
     expect(result).toHaveProperty("sort", { title: -1 });
     expect(result).toHaveProperty("limit", 15);
     expect(result).toHaveProperty("skip", 30);
+  });
+});
+
+describe("buildUpdateCommand", () => {
+  it("should only pick display and showInFeed fields", () => {
+    const result = postsSrv.buildUpdateCommand({
+      a: 1,
+      b: 2,
+      display: true,
+      showInFeed: false,
+    });
+    expect(result).toHaveProperty("display", true);
+    expect(result).toHaveProperty("showInFeed", false);
+    expect(result).not.toHaveProperty("a");
+    expect(result).not.toHaveProperty("b");
+  });
+
+  it("should ignore invalid display and showInFeed fields", () => {
+    const result = postsSrv.buildUpdateCommand({
+      a: 1,
+      b: 2,
+      display: "a",
+      showInFeed: false,
+    });
+    expect(result).toHaveProperty("showInFeed", false);
+    expect(result).not.toHaveProperty("display");
+    expect(result).not.toHaveProperty("a");
+    expect(result).not.toHaveProperty("b");
   });
 });
