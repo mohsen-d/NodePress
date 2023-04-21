@@ -21,6 +21,7 @@ const schema = new mongoose.Schema({
   tags: { type: [String], validate: validateTags },
   publish: { type: Date, default: Date.now },
   display: { type: Boolean, default: true },
+  showInFeed: { type: Boolean, default: true },
 });
 
 schema.statics.validate = function (instance) {
