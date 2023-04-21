@@ -1,7 +1,7 @@
 const posts = require("../../../controllers/posts.controller");
 const postsDb = require("../../../database/posts.db");
 
-const req = { user: { isAuthenticated: true } };
+const req = { baseUrl: "/admin" };
 
 const res = {
   send(response) {
@@ -171,31 +171,32 @@ describe("updatePost", () => {
   });
 });
 
-describe("updatePostsDisplay", () => {
-  mockDbMethod("updatePostsDisplay");
+describe("updatePosts", () => {
+  mockDbMethod("updatePosts");
 
   beforeEach(() => {
-    req.body = { ids: [1, 2, 3], display: false };
+    req.body = { ids: [1, 2, 3], display: false, showInFeed: true };
   });
 
-  it("should return with 400 error is display value is invalid", async () => {
+  it("should return with 400 error is parameters' values are invalid", async () => {
     req.body.display = 1;
-    const result = await posts.updatePostsDisplay(req, res);
+    req.body.showInFeed = "a";
+    const result = await posts.updatePosts(req, res);
     expect(result.status).toBe(400);
   });
 
   it("should pass ids to database layer", async () => {
-    await posts.updatePostsDisplay(req, res);
-    expect(postsDb.updatePostsDisplay).toHaveBeenCalledWith(
-      req.body.ids,
-      req.body.display
-    );
+    await posts.updatePosts(req, res);
+    expect(postsDb.updatePosts).toHaveBeenCalledWith(req.body.ids, {
+      display: req.body.display,
+      showInFeed: req.body.showInFeed,
+    });
   });
 
   it("should return the number of updated documents", async () => {
-    postsDb.updatePostsDisplay.mockReturnValue(3);
+    postsDb.updatePosts.mockReturnValue(3);
 
-    const result = await posts.updatePostsDisplay(req, res);
+    const result = await posts.updatePosts(req, res);
     expect(result.body).toBe(3);
   });
 });

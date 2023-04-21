@@ -55,13 +55,12 @@ module.exports.updatePost = async function (req, res) {
   return res.send(post);
 };
 
-module.exports.updatePostsDisplay = async function (req, res) {
-  if (typeof req.body.display !== "boolean")
-    return res.status(400).send(errorsSrv._400("id(s)"));
+module.exports.updatePosts = async function (req, res) {
+  const updateCommand = postsSrv.buildUpdateCommand(req.body);
 
-  const result = await postsDb.updatePostsDisplay(
-    req.body.ids,
-    req.body.display
-  );
+  if (Object.keys(updateCommand).length == 0)
+    return res.status(400).send(errorsSrv._400("paramteres"));
+
+  const result = await postsDb.updatePosts(req.body.ids, updateCommand);
   return res.send(result);
 };
