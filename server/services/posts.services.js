@@ -1,8 +1,14 @@
 const Joi = require("joi");
 
 module.exports.buildGetParameters = function (req, params) {
-  if (req.user.isAuthenticated) return params;
+  if (req.baseUrl.startsWith("/admin")) return params;
+
   params.display = true;
+
+  if (req.params.id) return params;
+
+  params.showInFeed = true;
+
   return params;
 };
 
@@ -19,6 +25,7 @@ module.exports.buildGetFilter = function (parameters) {
     urlTitle: Joi.string().max(50).truncate(),
     tags: Joi.string().max(50).truncate(),
     display: Joi.boolean(),
+    showInFeed: Joi.boolean(),
     publish: Joi.object().keys({
       from: Joi.date(),
       to: Joi.date(),
@@ -38,7 +45,7 @@ module.exports.buildGetFilter = function (parameters) {
     if (params[param] === undefined || params[param] === null) continue;
 
     switch (true) {
-      case ["_id", "display"].includes(param):
+      case ["_id", "display", "showInFeed"].includes(param):
         filter[param] = params[param];
         break;
 
@@ -90,4 +97,15 @@ module.exports.buildGetOptions = function (parameters = {}) {
     : (validationResult.value - 1) * options.limit;
 
   return options;
+};
+
+module.exports.buildUpdateCommand = function (fields) {
+  const updateCommand = {};
+  if (typeof fields.display === "boolean")
+    updateCommand.display = fields.display;
+
+  if (typeof fields.showInFeed === "boolean")
+    updateCommand.showInFeed = fields.showInFeed;
+
+  return updateCommand;
 };

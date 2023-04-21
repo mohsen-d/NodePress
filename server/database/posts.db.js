@@ -35,7 +35,7 @@ module.exports.updatePost = async function (id, post) {
   return updatedPost;
 };
 
-module.exports.updatePostsDisplay = async function (ids, display) {
-  const result = await Post.updateMany({ _id: { $in: ids } }, { display });
+module.exports.updatePosts = async function (ids, updateCommand) {
+  const result = await Post.updateMany({ _id: { $in: ids } }, updateCommand);
   return result.modifiedCount;
 };
