@@ -16,7 +16,7 @@ it("should map each route to its corresponding controller method", () => {
   expect(router.get).toHaveBeenCalledWith("/", postsCtrl.getPosts);
   expect(router.get).toHaveBeenCalledWith("/:id", postsCtrl.getPost);
   expect(router.post).toHaveBeenCalledWith("/", postsCtrl.addPost);
-  expect(router.put).toHaveBeenCalledWith("/", postsCtrl.updatePostsDisplay);
+  expect(router.put).toHaveBeenCalledWith("/", postsCtrl.updatePosts);
   expect(router.put).toHaveBeenCalledWith("/:id", postsCtrl.updatePost);
   expect(router.delete).toHaveBeenCalledWith("/", postsCtrl.deletePosts);
   expect(router.delete).toHaveBeenCalledWith("/:id", postsCtrl.deletePost);
