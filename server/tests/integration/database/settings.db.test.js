@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-require("../../../startup/db")();
+require("../../../startup/db.startup")();
 
 const settingsDb = require("../../../database/settings.db");
 const Settings = require("../../../models/settings.model");
