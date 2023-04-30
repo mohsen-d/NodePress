@@ -1,5 +1,6 @@
 const HtmlPlugin = require("html-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
 
 const clientSrcPath = path.resolve(__dirname, "./client/src/index.js");
@@ -11,13 +12,15 @@ const serverTemplatePath = path.resolve(
 const htmlTemplatePath = path.resolve(__dirname, "./client/src/index.ejs");
 
 module.exports = {
-  target: "node",
   entry: {
     main: clientSrcPath,
   },
   output: {
     filename: "bundle.js",
     path: clientDistPath,
+  },
+  devServer: {
+    static: clientDistPath,
   },
   module: {
     rules: [
@@ -31,6 +34,13 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.css$/i,
+        use: [
+          MiniCssExtractPlugin.loader,
+          { loader: "css-loader", options: { modules: true } },
+        ],
+      },
     ],
   },
   plugins: [
@@ -39,6 +49,7 @@ module.exports = {
       template: htmlTemplatePath,
       templateParameters: { content: "<%= content %>" },
     }),
+    new MiniCssExtractPlugin({ filename: "styles.css" }),
     new FileManagerPlugin({
       events: {
         onEnd: {
