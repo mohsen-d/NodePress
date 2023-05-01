@@ -3,9 +3,16 @@
   padding: 5px 20px;
   text-align: center;
 }
-.status {
+.status_not_complete {
   border-radius: 50%;
   border: solid 1px gray;
+  width: 15px;
+  height: 15px;
+}
+.status_completed {
+  border-radius: 50%;
+  border: solid 1px green;
+  background-color: green;
   width: 15px;
   height: 15px;
 }
