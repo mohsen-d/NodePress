@@ -10,6 +10,8 @@ export default function FormField({
   placeholder,
   onChange,
   errors = undefined,
+  disabled,
+  value = undefined,
 }) {
   if (["text", "file", "email", "password"].includes(type)) {
     return (
@@ -21,13 +23,22 @@ export default function FormField({
         type={type}
         errors={errors}
         onChange={onChange}
+        disabled={disabled}
+        value={value}
       />
     );
   }
 
   if (type === "checkbox") {
     return (
-      <CheckBox key={name} name={name} label={label} onChange={onChange} />
+      <CheckBox
+        disabled={disabled}
+        key={name}
+        name={name}
+        label={label}
+        onChange={onChange}
+        value={value}
+      />
     );
   }
 }
