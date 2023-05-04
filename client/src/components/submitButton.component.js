@@ -4,8 +4,10 @@ export default ({
   title = "Save",
   submitInProgressTitle = "Saving...",
   onClick,
+  disabled = false,
 }) => {
   const [btnTitle, setBtnTitle] = useState(title);
+  const btnDisabled = btnTitle === submitInProgressTitle;
 
   async function handleClick() {
     setBtnTitle(submitInProgressTitle);
@@ -13,5 +15,9 @@ export default ({
     setBtnTitle(title);
   }
 
-  return <button onClick={handleClick}>{btnTitle}</button>;
+  return (
+    <button disabled={disabled} onClick={handleClick}>
+      {btnTitle}
+    </button>
+  );
 };
