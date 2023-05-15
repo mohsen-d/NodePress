@@ -1,17 +1,14 @@
-const React = require("react");
-const { createRoot } = require("react-dom/client");
+import React from "react";
+import { createRoot } from "react-dom/client";
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+import Steps from "./components/steps.component";
+import SetupPage from "./pages/setup.page";
 
-  render() {
-    return <h1>SETUP</h1>;
-  }
+export default function App() {
+  return <SetupPage />;
 }
+
 if (typeof document !== "undefined") {
   const root = createRoot(document.getElementById("root"));
   root.render(<App />);
 }
-export default App;
