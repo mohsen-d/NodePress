@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import styles from "../assets/textInput.style.css";
 
 export default function TextInput({
   type,
@@ -17,15 +16,23 @@ export default function TextInput({
     onChange({ target: { id: name, value: "" } });
   }
 
+  const inptuClasses = `form-control${errors ? " is-invalid" : ""}`;
+
   return (
-    <div>
-      <div>
-        <label htmlFor={name}>{label}</label>
-      </div>
+    <div className="mb-3">
+      <label htmlFor={name} className="form-label">
+        {label}
+      </label>
       {type === "file" && !errors && typeof value === "object" ? (
-        <button disabled={disabled} onClick={clearFile}>
-          X remove selected file
-        </button>
+        <div class="d-grid">
+          <button
+            className="btn btn-outline-success"
+            disabled={disabled}
+            onClick={clearFile}
+          >
+            X remove selected file
+          </button>
+        </div>
       ) : (
         <>
           <input
@@ -35,8 +42,9 @@ export default function TextInput({
             type={type}
             placeholder={placeholder}
             value={type !== "file" ? value : undefined}
+            className={inptuClasses}
           />
-          <div className={styles.error}>{errors && errors}</div>
+          <div className="invalid-feedback">{errors && errors}</div>
         </>
       )}
     </div>

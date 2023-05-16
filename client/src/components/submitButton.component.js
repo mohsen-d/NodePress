@@ -16,7 +16,12 @@ export default ({
   }
 
   return (
-    <button disabled={disabled} onClick={handleClick}>
+    <button
+      className="btn btn-primary"
+      type="button"
+      disabled={disabled}
+      onClick={handleClick}
+    >
       {btnTitle}
     </button>
   );

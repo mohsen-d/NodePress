@@ -8,15 +8,18 @@ export default function Checkbox({
   value = false,
 }) {
   return (
-    <div>
+    <div className="form-check mb-3">
       <input
+        className="form-check-input"
         disabled={disabled}
         onChange={onChange}
         id={name}
         type="checkbox"
         checked={value}
       />
-      <label htmlFor={name}>{label}</label>
+      <label className="form-check-label" htmlFor={name}>
+        {label}
+      </label>
     </div>
   );
 }
