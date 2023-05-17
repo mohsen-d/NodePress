@@ -52,9 +52,9 @@ export default ({ stepCompleted, onReturn, data }) => {
   }
 
   return (
-    <div>
-      <h2>SETTINGS</h2>
-      <div>
+    <div className="row">
+      <h2 className="mb-2 text-info">SETTINGS</h2>
+      <form>
         {Object.entries(fields).map(([name, props]) => {
           return (
             <FormField
@@ -70,13 +70,18 @@ export default ({ stepCompleted, onReturn, data }) => {
             />
           );
         })}
-      </div>
-      <div>
-        <button disabled={disabled} onClick={() => onReturn("settings")}>
-          Back
-        </button>
-        <SubmitButton onClick={handleSubmit} disabled={disabled} />
-      </div>
+        <div className="d-grid gap-3">
+          <button
+            type="button"
+            className="btn btn-secondary me-1"
+            disabled={disabled}
+            onClick={() => onReturn("settings")}
+          >
+            Back
+          </button>
+          <SubmitButton onClick={handleSubmit} disabled={disabled} />
+        </div>
+      </form>
     </div>
   );
 };

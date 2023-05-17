@@ -43,9 +43,9 @@ export default ({ stepCompleted, data }) => {
   }
 
   return (
-    <div>
-      <h2>CONFIGS</h2>
-      <div>
+    <div className="row">
+      <h2 className="mb-2 text-info">CONFIGS</h2>
+      <form>
         {Object.entries(undefinedFields).map(([name, props]) => (
           <FormField
             key={name}
@@ -59,10 +59,10 @@ export default ({ stepCompleted, data }) => {
             value={form[name]}
           />
         ))}
-      </div>
-      <div>
-        <SubmitButton onClick={handleSubmit} disabled={disabled} />
-      </div>
+        <div className="d-grid gap-3">
+          <SubmitButton onClick={handleSubmit} disabled={disabled} />
+        </div>
+      </form>
     </div>
   );
 };

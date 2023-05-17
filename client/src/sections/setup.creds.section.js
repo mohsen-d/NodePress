@@ -38,9 +38,9 @@ export default ({ stepCompleted, onReturn, data }) => {
   }
 
   return (
-    <div>
-      <h2>ADMIN USER</h2>
-      <div>
+    <div class="row">
+      <h2 className="mb-2 text-info">ADMIN USER</h2>
+      <form>
         {Object.entries(fields).map(([name, props]) => (
           <FormField
             key={name}
@@ -54,13 +54,18 @@ export default ({ stepCompleted, onReturn, data }) => {
             value={form[name]}
           />
         ))}
-      </div>
-      <div>
-        <button disabled={disabled} onClick={() => onReturn("creds")}>
-          Back
-        </button>
-        <SubmitButton onClick={handleSubmit} disabled={disabled} />
-      </div>
+        <div class="d-grid gap-3">
+          <button
+            type="button"
+            className="btn btn-secondary me-1"
+            disabled={disabled}
+            onClick={() => onReturn("creds")}
+          >
+            Back
+          </button>
+          <SubmitButton onClick={handleSubmit} disabled={disabled} />
+        </div>
+      </form>
     </div>
   );
 };
