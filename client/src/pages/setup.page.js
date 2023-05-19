@@ -32,7 +32,7 @@ export default () => {
   return (
     <div>
       <h1>SETUP</h1>
-      <Steps list={steps} />
+      <Steps list={steps} current={currentStep} />
       {currentStep.render(done, currentStep.data, handleReturn)}
     </div>
   );

@@ -2,11 +2,19 @@ import React from "react";
 
 import Step from "./step.component";
 
-export default function Steps({ list }) {
+import styles from "../assets/steps.style.css";
+
+export default function Steps({ list, current }) {
+  const className = styles.steps + " row mb-4 mt-3";
   return (
-    <div id="setup-steps">
+    <div className={className}>
       {Object.entries(list).map(([k, s]) => (
-        <Step title={s.title} key={s.title} isCompleted={s.isCompleted} />
+        <Step
+          title={s.title}
+          key={s.title}
+          isCompleted={s.isCompleted}
+          isCurrent={current.title === s.title}
+        />
       ))}
     </div>
   );

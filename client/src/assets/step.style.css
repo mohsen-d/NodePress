@@ -1,21 +1,12 @@
-.step {
-  display: inline-block;
-  padding: 5px 20px;
-  text-align: center;
+@value steps from "./steps.style.css";
+
+.steps .step:first-child .left_line,
+.steps .step:last-child .right_line {
+  display: none;
 }
-.status_not_complete {
-  border-radius: 50%;
-  border: solid 1px gray;
+
+.status {
   width: 15px;
   height: 15px;
-}
-.status_completed {
-  border-radius: 50%;
-  border: solid 1px green;
-  background-color: green;
-  width: 15px;
-  height: 15px;
-}
-.title {
-  padding-left: 5px;
+  vertical-align: sub;
 }
