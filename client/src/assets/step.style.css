@@ -4,9 +4,22 @@
 .steps .step:last-child .right_line {
   display: none;
 }
-
+.left_line,
+.right_line {
+  height: 1px;
+}
+.title {
+  font-size: 0.9rem;
+}
 .status {
   width: 15px;
   height: 15px;
   vertical-align: sub;
+}
+
+@media (min-width: 576px) {
+  .left_line,
+  .right_line {
+    height: 4px;
+  }
 }
