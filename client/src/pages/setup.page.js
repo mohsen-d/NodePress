@@ -30,8 +30,8 @@ export default () => {
   }
 
   return (
-    <div>
-      <h1>SETUP</h1>
+    <div className="row mb-3 mt-3">
+      <h1 className="col-12 col-lg-7 offset-lg-2">SETUP</h1>
       <Steps list={steps} current={currentStep} />
       {currentStep.render(done, currentStep.data, handleReturn)}
     </div>
