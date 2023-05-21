@@ -48,33 +48,49 @@ export const fields = {
     type: "text",
     label: "Domain:",
     placeholder: "example: nodepress.com",
+    tabIndex: 1,
   },
   database: {
     type: "text",
     label: "Database connection:",
     placeholder: "mongodb://",
+    tabIndex: 2,
   },
   jwtPrivateKey: {
     type: "text",
     label: "Private Key:",
     placeholder: "",
+    tabIndex: 3,
   },
-  host: { type: "text", label: "Email host:", placeholder: "smtp.domain.com" },
+  host: {
+    type: "text",
+    label: "Email host:",
+    placeholder: "smtp.domain.com",
+    tabIndex: 4,
+  },
   port: {
     type: "text",
     label: "Email host port:",
     placeholder: "example : 3000",
+    tabIndex: 5,
   },
-  username: { type: "text", label: "Email host username:", placeholder: "" },
+  username: {
+    type: "text",
+    label: "Email host username:",
+    placeholder: "",
+    tabIndex: 6,
+  },
   password: {
     type: "password",
     label: "Email host password:",
     placeholder: "",
+    tabIndex: 7,
   },
   from: {
     type: "email",
     label: "Email sender address:",
     placeholder: "example: noreply@domain.com",
+    tabIndex: 8,
   },
 };
 

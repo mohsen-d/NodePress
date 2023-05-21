@@ -67,6 +67,7 @@ export default ({ stepCompleted, onReturn, data }) => {
               onChange={handleChange}
               disabled={disabled}
               value={form[name]}
+              tabIndex={props.tabIndex}
             />
           );
         })}

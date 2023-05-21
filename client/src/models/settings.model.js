@@ -26,41 +26,49 @@ export const fields = {
     type: "text",
     label: "Site title:",
     placeholder: "example: my blog",
+    tabIndex: 1,
   },
   description: {
     type: "text",
     label: "A short description:",
     placeholder: "example: a blog about daily events",
+    tabIndex: 2,
   },
   keywords: {
     type: "text",
     label: "Keywords:",
     placeholder: "example: blog, daily_life, events",
+    tabIndex: 3,
   },
   favicon: {
     type: "file",
     label: "Favicon:",
     placeholder: "",
+    tabIndex: 4,
   },
   banner: {
     type: "file",
     label: "Banner:",
     placeholder: "",
+    tabIndex: 5,
   },
   copyright: {
     type: "text",
     label: "Copyright:",
     placeholder: "example: all rights reserved for author",
+    tabIndex: 6,
   },
   landingPage: {
     type: "checkbox",
     label: "Have a landing page?",
     placeholder: "",
+    tabIndex: 7,
   },
   enableMembership: {
     type: "checkbox",
     label: "Enable membership?",
     placeholder: "",
+    tabIndex: 8,
   },
 };
 

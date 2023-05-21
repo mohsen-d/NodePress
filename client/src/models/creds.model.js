@@ -29,21 +29,25 @@ export const fields = {
     type: "text",
     label: "Your name:",
     placeholder: "example: John Smith",
+    tabIndex: 1,
   },
   email: {
     type: "email",
     label: "Your email:",
     placeholder: "",
+    tabIndex: 2,
   },
   password: {
     type: "password",
     label: "Your password:",
     placeholder: "",
+    tabIndex: 3,
   },
   confirm: {
     type: "password",
     label: "Confirm your password:",
     placeholder: "",
+    tabIndex: 4,
   },
 };
 

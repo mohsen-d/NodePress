@@ -57,6 +57,7 @@ export default ({ stepCompleted, data }) => {
             onChange={handleChange}
             disabled={disabled}
             value={form[name]}
+            tabIndex={props.tabIndex}
           />
         ))}
         <div className="d-grid d-lg-block d-lg-flex justify-content-lg-end">
