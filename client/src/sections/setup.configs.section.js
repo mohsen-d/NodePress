@@ -26,7 +26,8 @@ export default ({ stepCompleted, data }) => {
     }));
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(e) {
+    e.preventDefault();
     const formEerrors = validate(form);
 
     if (formEerrors) {
@@ -45,7 +46,7 @@ export default ({ stepCompleted, data }) => {
   return (
     <div className="row">
       <h2 className="col-12 col-lg-7 offset-lg-2 mb-2 text-info">CONFIGS</h2>
-      <form className="col-12 col-lg-7 offset-lg-2">
+      <form className="col-12 col-lg-7 offset-lg-2" onSubmit={handleSubmit}>
         {Object.entries(undefinedFields).map(([name, props]) => (
           <FormField
             key={name}
@@ -61,7 +62,7 @@ export default ({ stepCompleted, data }) => {
           />
         ))}
         <div className="d-grid d-lg-block d-lg-flex justify-content-lg-end">
-          <SubmitButton onClick={handleSubmit} disabled={disabled} />
+          <SubmitButton disabled={disabled} />
         </div>
       </form>
     </div>

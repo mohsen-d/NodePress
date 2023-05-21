@@ -24,7 +24,9 @@ export default ({ stepCompleted, onReturn, data }) => {
     }));
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(e) {
+    e.preventDefault();
+
     const formEerrors = validate(form);
     if (formEerrors) {
       return setErrors(formEerrors);
@@ -40,7 +42,7 @@ export default ({ stepCompleted, onReturn, data }) => {
   return (
     <div class="row">
       <h2 className="col-12 col-lg-7 offset-lg-2 mb-2 text-info">ADMIN USER</h2>
-      <form className="col-12 col-lg-7 offset-lg-2">
+      <form className="col-12 col-lg-7 offset-lg-2" onSubmit={handleSubmit}>
         {Object.entries(fields).map(([name, props]) => (
           <FormField
             key={name}
@@ -64,7 +66,7 @@ export default ({ stepCompleted, onReturn, data }) => {
           >
             Back
           </button>
-          <SubmitButton onClick={handleSubmit} disabled={disabled} />
+          <SubmitButton disabled={disabled} />
         </div>
       </form>
     </div>

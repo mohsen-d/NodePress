@@ -12,7 +12,12 @@ export default () => {
       </div>
       <div class="col-12 col-lg-7 offset-lg-2 mb-3">
         <div className="d-grid d-lg-block d-lg-flex justify-content-lg-end">
-          <button type="button" class="btn btn-success" onClick={handleClick}>
+          <button
+            type="button"
+            class="btn btn-success"
+            onClick={handleClick}
+            autoFocus
+          >
             Go to Admin Panel
           </button>
         </div>
