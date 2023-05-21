@@ -17,7 +17,7 @@ export default ({
 
   return (
     <button
-      className="btn btn-primary"
+      className="btn btn-primary px-5"
       type="button"
       disabled={disabled}
       onClick={handleClick}
