@@ -1,7 +1,7 @@
 const postsDb = require("../../../database/posts.db");
 const Post = require("../../../models/post.model");
 const mongoose = require("mongoose");
-require("../../../startup/db")();
+require("../../../startup/db.startup")();
 
 afterAll(() => {
   mongoose.disconnect();

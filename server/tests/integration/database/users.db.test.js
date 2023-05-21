@@ -1,7 +1,7 @@
 const usersDb = require("../../../database/users.db");
 const User = require("../../../models/user.model");
 const mongoose = require("mongoose");
-require("../../../startup/db")();
+require("../../../startup/db.startup")();
 
 afterAll(() => {
   mongoose.disconnect();

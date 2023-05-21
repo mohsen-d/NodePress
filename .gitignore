@@ -3,3 +3,5 @@ todo.txt
 playground.js
 .env
 *.log
+client/dist/
+server/templates/

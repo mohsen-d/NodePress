@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-require("../../../startup/db")();
+require("../../../startup/db.startup")();
 
 const menuDb = require("../../../database/menu.db");
 const Menu = require("../../../models/menu.model");
