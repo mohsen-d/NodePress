@@ -6,6 +6,7 @@ export default function Checkbox({
   onChange,
   disabled,
   value = false,
+  tabIndex = 0,
 }) {
   return (
     <div className="form-check mb-3">
@@ -16,6 +17,7 @@ export default function Checkbox({
         id={name}
         type="checkbox"
         checked={value}
+        tabIndex={tabIndex}
       />
       <label className="form-check-label" htmlFor={name}>
         {label}

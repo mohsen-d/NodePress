@@ -9,6 +9,7 @@ export default function TextInput({
   errors,
   disabled,
   value = "",
+  tabIndex = 0,
 }) {
   const ref = useRef(null);
 
@@ -43,6 +44,8 @@ export default function TextInput({
             placeholder={placeholder}
             value={type !== "file" ? value : undefined}
             className={inptuClasses}
+            tabIndex={tabIndex}
+            autoFocus={tabIndex === 1}
           />
           <div className="invalid-feedback">{errors && errors}</div>
         </>

@@ -12,6 +12,7 @@ export default function FormField({
   errors = undefined,
   disabled,
   value = undefined,
+  tabIndex,
 }) {
   if (["text", "file", "email", "password"].includes(type)) {
     return (
@@ -25,6 +26,7 @@ export default function FormField({
         onChange={onChange}
         disabled={disabled}
         value={value}
+        tabIndex={tabIndex}
       />
     );
   }
@@ -38,6 +40,7 @@ export default function FormField({
         label={label}
         onChange={onChange}
         value={value}
+        tabIndex={tabIndex}
       />
     );
   }
