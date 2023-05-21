@@ -39,8 +39,8 @@ export default ({ stepCompleted, onReturn, data }) => {
 
   return (
     <div class="row">
-      <h2 className="mb-2 text-info">ADMIN USER</h2>
-      <form>
+      <h2 className="col-12 col-lg-7 offset-lg-2 mb-2 text-info">ADMIN USER</h2>
+      <form className="col-12 col-lg-7 offset-lg-2">
         {Object.entries(fields).map(([name, props]) => (
           <FormField
             key={name}
@@ -54,7 +54,7 @@ export default ({ stepCompleted, onReturn, data }) => {
             value={form[name]}
           />
         ))}
-        <div class="d-grid gap-3">
+        <div class="d-grid row-gap-2 d-lg-block d-lg-flex justify-content-lg-end">
           <button
             type="button"
             className="btn btn-secondary me-1"
